@@ -58,5 +58,11 @@
     "median_DCR_synthetic_to_real": 2.2,
     "median_NN_real_to_real": 1.765,
     "share_synthetic_closer_than_5th_pct_real_NN": 0.003
+  },
+  "ablation_copula_only": {
+    "relapse_rate": 0.131,
+    "OR_hormonal_therapy": 1.08,
+    "OR_radiotherapy": 1.25,
+    "note": "copula alone washes out factor->relapse links; the outcome layer restores them"
   }
 }

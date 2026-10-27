@@ -258,12 +258,18 @@ def main():
 
     real = pd.read_csv(REAL)
     model = GaussianCopula().fit(prepare(real), rng)
-    syn = enforce_logic(model.sample(args.n, rng), rng)
-    syn = draw_outcomes(syn, *fit_outcome_models(real), rng)
+    copula_only = enforce_logic(model.sample(args.n, rng), rng)  # ablation: no outcome layer
+    syn = draw_outcomes(copula_only, *fit_outcome_models(real), rng)
 
     OUT.mkdir(parents=True, exist_ok=True)
     syn.to_csv(OUT / "synthetic_patients.csv", index=False)
     q = validate(real, syn, len(real))
+    q["ablation_copula_only"] = {
+        "relapse_rate": round(float(copula_only.relapse.mean()), 3),
+        "OR_hormonal_therapy": odds(copula_only, lambda d: d.hormonal_therapy == 1),
+        "OR_radiotherapy": odds(copula_only, lambda d: d.radiotherapy == 1),
+        "note": "copula alone washes out factor->relapse links; the outcome layer restores them",
+    }
     (ROOT / "reports" / "synthetic_quality.json").write_text(json.dumps(q, indent=2))
     plot(real, syn, ROOT / "reports" / "figures" / "10_real_vs_synthetic.png")
     print(f"wrote {len(syn)} synthetic patients -> {OUT/'synthetic_patients.csv'}")
