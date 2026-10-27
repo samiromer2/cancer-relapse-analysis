@@ -1,0 +1,62 @@
+{
+  "marginal_TVD": {
+    "region": 0.014,
+    "site_group": 0.021,
+    "sex": 0.036,
+    "breast_subtype": 0.157,
+    "histology": 0.012,
+    "ses_code": 0.017,
+    "er": 0.044,
+    "pr": 0.025,
+    "her2": 0.024,
+    "grade": 0.007,
+    "dx_year": 0.02,
+    "years_since_dx": 0.007,
+    "n_visits": 0.015,
+    "n_units_seen": 1.0,
+    "metastatic_at_dx": 0.007,
+    "metastatic": 0.081,
+    "mets_bone": 0.056,
+    "mets_liver": 0.035,
+    "mets_lung": 0.038,
+    "mets_brain": 0.011,
+    "surgery": 0.003,
+    "chemotherapy": 0.005,
+    "neoadjuvant_chemo": 0.003,
+    "radiotherapy": 0.012,
+    "hormonal_therapy": 0.01,
+    "bisphosphonate": 0.003,
+    "opioid": 0.0,
+    "palliative_referral": 0.011,
+    "treated_abroad": 0.001,
+    "missed_followup_or_delay": 0.002,
+    "recurrence_or_progression": 0.055,
+    "eligible_for_relapse": 0.028
+  },
+  "marginal_TVD_mean": 0.055,
+  "corr_mean_abs_diff": 0.095,
+  "utility": {
+    "relapse_rate": {
+      "real": 0.356,
+      "synthetic": 0.354
+    },
+    "OR_hormonal_therapy": {
+      "real": 0.18,
+      "synthetic": 0.2
+    },
+    "OR_radiotherapy": {
+      "real": 0.26,
+      "synthetic": 0.32
+    },
+    "OR_breast": {
+      "real": 0.24,
+      "synthetic": 0.32
+    }
+  },
+  "privacy": {
+    "exact_copies_of_real_rows": 0,
+    "median_DCR_synthetic_to_real": 2.177,
+    "median_NN_real_to_real": 1.732,
+    "share_synthetic_closer_than_5th_pct_real_NN": 0.006
+  }
+}

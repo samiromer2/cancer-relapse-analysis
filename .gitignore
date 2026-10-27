@@ -1,0 +1,16 @@
+# ---- PRIVATE: never commit ----
+# raw dump: names, phone numbers, hospital file numbers
+*.sql
+# de-identified but still rich clinical notes + exact quasi-identifiers
+data/processed/
+data/raw/
+# course material (not ours to redistribute)
+related files/
+
+# ---- environment ----
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+.env

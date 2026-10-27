@@ -1,0 +1,340 @@
+{
+  "profile": {
+    "patients": 335,
+    "breast_share": 0.543,
+    "sex": {
+      "F": 206,
+      "Unknown": 101,
+      "M": 28
+    },
+    "metastatic_any": 107,
+    "metastatic_at_dx": 64,
+    "dx_year_known": 250,
+    "median_years_since_dx": 1.0,
+    "breast_subtypes": {
+      "Unknown": 124,
+      "Triple negative": 22,
+      "HR+/HER2-": 21,
+      "HER2+": 12,
+      "HR+ (HER2 unknown)": 3
+    },
+    "receptor_known_breast": 58
+  },
+  "top_correlations": [
+    {
+      "a": "breast",
+      "b": "female",
+      "phi": 0.85
+    },
+    {
+      "a": "metastatic",
+      "b": "mets at dx",
+      "phi": 0.71
+    },
+    {
+      "a": "bone mets",
+      "b": "zoledronic acid",
+      "phi": 0.59
+    },
+    {
+      "a": "metastatic",
+      "b": "bone mets",
+      "phi": 0.59
+    },
+    {
+      "a": "breast",
+      "b": "hormonal tx",
+      "phi": 0.55
+    },
+    {
+      "a": "mets at dx",
+      "b": "liver mets",
+      "phi": 0.48
+    },
+    {
+      "a": "metastatic",
+      "b": "recurrence/progr.",
+      "phi": 0.47
+    },
+    {
+      "a": "metastatic",
+      "b": "lung mets",
+      "phi": 0.46
+    },
+    {
+      "a": "female",
+      "b": "hormonal tx",
+      "phi": 0.45
+    },
+    {
+      "a": "metastatic",
+      "b": "liver mets",
+      "phi": 0.44
+    },
+    {
+      "a": "hormonal tx",
+      "b": "≥5 yrs since dx",
+      "phi": 0.43
+    },
+    {
+      "a": "metastatic",
+      "b": "zoledronic acid",
+      "phi": 0.42
+    },
+    {
+      "a": "mets at dx",
+      "b": "bone mets",
+      "phi": 0.39
+    },
+    {
+      "a": "breast",
+      "b": "palliative referral",
+      "phi": -0.37
+    },
+    {
+      "a": "mets at dx",
+      "b": "lung mets",
+      "phi": 0.35
+    }
+  ],
+  "relapse": {
+    "eligible": 87,
+    "relapsed": 31,
+    "rate": 0.356,
+    "univariate": [
+      {
+        "factor": "Triple-negative breast",
+        "n_with": 9,
+        "relapse_with": "3/9 (33%)",
+        "relapse_without": "28/78 (36%)",
+        "odds_ratio": 0.95,
+        "ci_low": 0.24,
+        "ci_high": 3.79,
+        "p_fisher": 1.0,
+        "p_fdr": 1.0
+      },
+      {
+        "factor": "HER2-positive breast",
+        "n_with": 9,
+        "relapse_with": "3/9 (33%)",
+        "relapse_without": "28/78 (36%)",
+        "odds_ratio": 0.95,
+        "ci_low": 0.24,
+        "ci_high": 3.79,
+        "p_fisher": 1.0,
+        "p_fdr": 1.0
+      },
+      {
+        "factor": "Treated abroad (Egypt/India/Jordan)",
+        "n_with": 9,
+        "relapse_with": "3/9 (33%)",
+        "relapse_without": "28/78 (36%)",
+        "odds_ratio": 0.95,
+        "ci_low": 0.24,
+        "ci_high": 3.79,
+        "p_fisher": 1.0,
+        "p_fdr": 1.0
+      },
+      {
+        "factor": "Grade 3 tumour",
+        "n_with": 13,
+        "relapse_with": "4/13 (31%)",
+        "relapse_without": "27/74 (36%)",
+        "odds_ratio": 0.82,
+        "ci_low": 0.24,
+        "ci_high": 2.76,
+        "p_fisher": 0.7641,
+        "p_fdr": 1.0
+      },
+      {
+        "factor": "Missed follow-up / delayed care",
+        "n_with": 4,
+        "relapse_with": "1/4 (25%)",
+        "relapse_without": "30/83 (36%)",
+        "odds_ratio": 0.75,
+        "ci_low": 0.11,
+        "ci_high": 5.36,
+        "p_fisher": 1.0,
+        "p_fdr": 1.0
+      },
+      {
+        "factor": "Lives in Khartoum",
+        "n_with": 26,
+        "relapse_with": "8/26 (31%)",
+        "relapse_without": "23/61 (38%)",
+        "odds_ratio": 0.75,
+        "ci_low": 0.29,
+        "ci_high": 1.97,
+        "p_fisher": 0.6287,
+        "p_fdr": 1.0
+      },
+      {
+        "factor": "Neoadjuvant chemo (big tumour at start)",
+        "n_with": 13,
+        "relapse_with": "3/13 (23%)",
+        "relapse_without": "28/74 (38%)",
+        "odds_ratio": 0.54,
+        "ci_low": 0.15,
+        "ci_high": 1.99,
+        "p_fisher": 0.3643,
+        "p_fdr": 0.6766
+      },
+      {
+        "factor": "Hormone-receptor positive",
+        "n_with": 20,
+        "relapse_with": "4/20 (20%)",
+        "relapse_without": "27/67 (40%)",
+        "odds_ratio": 0.4,
+        "ci_low": 0.13,
+        "ci_high": 1.27,
+        "p_fisher": 0.1163,
+        "p_fdr": 0.252
+      },
+      {
+        "factor": "≥5 years since diagnosis",
+        "n_with": 52,
+        "relapse_with": "14/52 (27%)",
+        "relapse_without": "17/35 (49%)",
+        "odds_ratio": 0.4,
+        "ci_low": 0.16,
+        "ci_high": 0.97,
+        "p_fisher": 0.0439,
+        "p_fdr": 0.1141
+      },
+      {
+        "factor": "Had surgery",
+        "n_with": 43,
+        "relapse_with": "10/43 (23%)",
+        "relapse_without": "21/44 (48%)",
+        "odds_ratio": 0.34,
+        "ci_low": 0.14,
+        "ci_high": 0.85,
+        "p_fisher": 0.0249,
+        "p_fdr": 0.0809
+      },
+      {
+        "factor": "Had radiotherapy",
+        "n_with": 59,
+        "relapse_with": "15/59 (25%)",
+        "relapse_without": "16/28 (57%)",
+        "odds_ratio": 0.26,
+        "ci_low": 0.1,
+        "ci_high": 0.67,
+        "p_fisher": 0.0076,
+        "p_fdr": 0.0329
+      },
+      {
+        "factor": "Breast cancer (vs other sites)",
+        "n_with": 68,
+        "relapse_with": "19/68 (28%)",
+        "relapse_without": "12/19 (63%)",
+        "odds_ratio": 0.24,
+        "ci_low": 0.08,
+        "ci_high": 0.67,
+        "p_fisher": 0.0068,
+        "p_fdr": 0.0329
+      },
+      {
+        "factor": "On hormonal therapy",
+        "n_with": 58,
+        "relapse_with": "13/58 (22%)",
+        "relapse_without": "18/29 (62%)",
+        "odds_ratio": 0.18,
+        "ci_low": 0.07,
+        "ci_high": 0.48,
+        "p_fisher": 0.0007,
+        "p_fdr": 0.0091
+      }
+    ],
+    "multivariable": {
+      "years_since_dx": {
+        "odds_ratio": 1.0,
+        "ci_low": 0.85,
+        "ci_high": 1.17,
+        "p": 0.9928
+      },
+      "breast": {
+        "odds_ratio": 1.07,
+        "ci_low": 0.1,
+        "ci_high": 11.85,
+        "p": 0.9542
+      },
+      "triple_negative": {
+        "odds_ratio": 0.22,
+        "ci_low": 0.02,
+        "ci_high": 2.61,
+        "p": 0.2293
+      },
+      "hormonal_therapy": {
+        "odds_ratio": 0.14,
+        "ci_low": 0.01,
+        "ci_high": 1.37,
+        "p": 0.0914
+      },
+      "radiotherapy": {
+        "odds_ratio": 0.28,
+        "ci_low": 0.09,
+        "ci_high": 0.86,
+        "p": 0.0266
+      }
+    }
+  },
+  "km": {
+    "n": 86,
+    "relapse_free_at_years": {
+      "2": 0.81,
+      "5": 0.7,
+      "8": 0.57
+    },
+    "breast_tn_logrank_p": 0.6023621174927656
+  },
+  "confounding_hormonal_therapy": {
+    "Crude (all)": {
+      "OR": 0.18,
+      "ci": [
+        0.07,
+        0.48
+      ],
+      "n": 87,
+      "on_HT": 58
+    },
+    "Breast, HR+": {
+      "OR": 0.07,
+      "ci": [
+        0.0,
+        2.12
+      ],
+      "n": 20,
+      "on_HT": 19
+    },
+    "Breast, HR- or unknown": {
+      "OR": 0.22,
+      "ci": [
+        0.05,
+        0.91
+      ],
+      "n": 48,
+      "on_HT": 38
+    },
+    "Other sites": {
+      "OR": 1.96,
+      "ci": [
+        0.07,
+        54.68
+      ],
+      "n": 19,
+      "on_HT": 1
+    },
+    "Mantel-Haenszel adjusted": {
+      "OR": 0.28,
+      "ci": [
+        0.09,
+        0.88
+      ]
+    }
+  },
+  "booking_signal": {
+    "escalated_from_HT_patients": 11,
+    "relapse_rate_if_escalated": 0.64
+  }
+}

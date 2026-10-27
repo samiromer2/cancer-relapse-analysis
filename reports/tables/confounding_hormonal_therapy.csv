@@ -1,0 +1,6 @@
+stratum,n,relapse on HT,relapse no HT,OR (95% CI)
+Crude (all),87,13/58,18/29,0.18 (0.07-0.48)
+"Breast, HR+",20,3/19,1/1,0.07 (0.00-2.12)
+"Breast, HR- or unknown",48,9/38,6/10,0.22 (0.05-0.91)
+Other sites,19,1/1,11/18,1.96 (0.07-54.68)
+Mantel-Haenszel (site/HR adjusted),87,,,0.28 (0.09-0.88)
