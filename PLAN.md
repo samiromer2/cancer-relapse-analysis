@@ -27,13 +27,13 @@ KPI = outcome the clinic wants to move. Metric = what helps explain or move it.
 | 3. EDA | ✅ done | `src/analysis.py` |
 | 4. Visualization | ✅ 10 charts | `reports/figures/` |
 | 5. Feature Engineering | ✅ 60 features from notes | `src/extract_features.py` |
-| 6. Modeling | ❌ **missing** | — |
-| 7. Evaluation | ❌ **missing** | — |
-| 8. Recommendation | ⚠️ partly in README | — |
+| 6. Modeling | ✅ logistic + random forest, repeated CV | `src/model.py` |
+| 7. Evaluation | ✅ accuracy/precision/recall/F1/AUC, confusion matrix, operating points | `reports/` |
+| 8. Recommendation | ⚠️ draft in README §8 | — |
 
 ## Phases
 
-### Phase 0 — Put it on GitHub (½ day)
+### Phase 0 — Put it on GitHub ✅ done — https://github.com/samiromer2/cancer-relapse-analysis
 - `git init`, confirm `.gitignore` blocks `bookingtreat.sql`, `.venv`, `.DS_Store`.
 - **Never commit:** the raw `.sql`, and `data/processed/patients_clean.csv` (free-text notes are
   de-identified but still rich). Commit `patients_features.csv` + synthetic data instead.
@@ -48,7 +48,7 @@ importing logic from `src/` (no copy-pasted code):
 `06_modeling` · `07_evaluation` · `08_recommendation`.
 Each opens with **the business question** and ends with **"so what?"** for the clinic.
 
-### Phase 2 — Modeling: predict relapse (1–2 days)
+### Phase 2 — Modeling: predict relapse ✅ done
 - Target `y` = `relapse` (curative cohort, n = 87, 31 events). Classification problem.
 - Features `X`: site, receptor subtype, grade, surgery, RT, hormonal therapy, neoadjuvant,
   years since dx, region, treated abroad, missed follow-up.
@@ -58,7 +58,7 @@ Each opens with **the business question** and ends with **"so what?"** for the c
 - n is small → **stratified 5-fold cross-validation repeated 20×**, not a single train/test split.
 - Second experiment: **train on synthetic, test on real** (does the synthetic data carry the signal?).
 
-### Phase 3 — Evaluation (1 day)
+### Phase 3 — Evaluation ✅ done
 - Accuracy, precision, recall, F1, confusion matrix, ROC-AUC, calibration plot.
 - Clinic translation table (same idea as the PDF's marketing table):
 
@@ -88,7 +88,6 @@ Each opens with **the business question** and ends with **"so what?"** for the c
 - Interactive report/dashboard (shareable link) + polished README for the GitHub repo.
 
 ## Open questions (need your answer)
-1. GitHub repo **private or public**? And under `samiromer2`?
-2. Is this for the course in the PDF (needs the 8-stage notebook format) or a portfolio piece (or both)?
-3. Do you have an **Anthropic API key** for Phase 4?
-4. Can anyone at the clinic tell us what `ses` means, or provide stage / age / date of death?
+1. ~~Public or private~~ → public. ~~Course or portfolio~~ → both.
+2. Do you have an **Anthropic API key** for Phase 4?
+3. Can anyone at the clinic tell us what `ses` means, or provide stage / age / date of death?

@@ -160,7 +160,54 @@ recurrence), so they are *consistent with* a causal effect. This dataset alone c
 The non-finding for triple-negative breast cancer (known to relapse earlier) is most likely
 **too few documented receptor results**, not true absence.
 
-## 6. Synthetic data (`data/synthetic/synthetic_patients.csv`)
+## 6. Predicting relapse — model & evaluation (`src/model.py`)
+
+**Clinic question:** with limited follow-up slots and scans, can we flag the curatively treated
+patients most likely to relapse so they are seen first?
+
+- Target: `relapse` (87 patients, 31 relapses). Classification problem.
+- Features: only information known **before** relapse: site, breast subtype, grade, surgery,
+  radiotherapy, hormonal therapy, neo/adjuvant chemo, anti-HER2, years since diagnosis, region,
+  treated abroad, missed follow-up.
+- **Leakage removed on purpose:** metastasis flags, palliative referral, opioids, zoledronic acid,
+  2nd-line chemo and visit counts are all *consequences* of relapse.
+- Validation: 5-fold stratified cross-validation × 20 repeats. n is too small for one train/test split.
+- Runs on the **public k-anonymous file**, so it is reproducible from this repo.
+
+| Model | ROC-AUC | Accuracy | Precision | Recall | F1 |
+|---|---|---|---|---|---|
+| Random flagging (baseline) | 0.48 | 0.53 | 0.34 | 0.34 | 0.34 |
+| Logistic regression | 0.69 | 0.66 | 0.52 | 0.52 | 0.52 |
+| **Random forest** | **0.71** | **0.69** | **0.57** | **0.57** | **0.57** |
+
+(Threshold: flag the top 36% highest-risk patients, matching the relapse rate, so precision = recall here.)
+
+![metrics](reports/figures/11_model_metrics.png)
+![confusion](reports/figures/12_confusion_matrices.png)
+
+**The clinic's real decision is how many patients to flag** (`tables/model_operating_points.csv`):
+
+| Flag the top… | Relapses caught (recall), random forest | Relapses caught, random flagging | Precision |
+|---|---|---|---|
+| 20% | 38% | 20% | 0.65 |
+| 36% | 57% | 34% | 0.57 |
+| 50% | **73%** | 48% | 0.51 |
+| 70% | 83% | 69% | 0.42 |
+
+A missed relapse (false negative) costs more than an extra scan (false positive), so **recall
+matters more**. Flagging the top half catches about three in four relapses, versus about half with random flagging.
+
+**Honest caveats**
+- AUC ≈ 0.7 is *modest*. It is useful for prioritising, not for telling a patient they're safe.
+- Dropping hormonal therapy (possible reverse causation) lowers AUC only slightly (0.68).
+- **Train on synthetic, test on real** (synthesiser refit inside each fold): AUC 0.75 vs 0.71
+  when training on real data. The synthetic data carries the signal, but with 87 patients
+  and 3 repeats, read this as "no loss" rather than "better".
+- Needs external validation on a different clinic or time period before any clinical use.
+
+![coefficients](reports/figures/13_model_coefficients.png)
+
+## 7. Synthetic data (`data/synthetic/synthetic_patients.csv`)
 
 `synthesize.py` fits a **Gaussian copula** to 32 structured factors, applies clinical logic
 (site↔sex, receptor fields only for breast, eligibility), then draws the **relapse outcome from a
@@ -181,15 +228,17 @@ flags run low. With n = 335, the generator can only reproduce what the real data
 **Never use synthetic data to make clinical claims.** Use it to build and test pipelines,
 dashboards and models.
 
-## 7. Next steps
-1. **Ask the clinic** what `ses` means, and whether stage, age and date of death exist elsewhere.
-   These three variables would change the analysis most.
-2. **LLM-assisted extraction:** have Claude re-read each note into a strict JSON schema and compare it with
-   the regex features (inter-rater agreement), with a clinician resolving disagreements.
-3. **LLM-generated synthetic notes:** condition Claude on each synthetic row to write a realistic
-   clinical summary. This yields a fully synthetic, shareable text + tabular dataset.
-4. Prediction model for relapse (penalised logistic / survival model) trained on synthetic data and
-   validated on real data, reported with calibration, not just accuracy.
+## 8. Recommendation (draft)
+1. **Prioritise follow-up** for curatively treated patients the model ranks in the top half,
+   especially non-breast cancers and patients who didn't receive surgery, radiotherapy or hormonal therapy.
+   This catches about 73% of relapses while seeing half the patients.
+2. **Fix the records first:** add structured fields for **stage, age, ER/PR/HER2 and date of death**.
+   Receptor status is missing for 68% of breast patients, and stage is missing for everyone.
+   This is the cheapest way to make every future analysis better.
+3. Treat all findings as **associations**. Re-run the model as better data accumulates, and
+   validate it on new patients before using it in care.
+
+Roadmap and status: see [PLAN.md](PLAN.md).
 
 ## Project layout
 ```
@@ -197,6 +246,7 @@ src/parse_sql.py          read the MySQL dump without a database server
 src/clean_anonymize.py    de-identify, merge duplicates, generalise geography & dates
 src/extract_features.py   clinical-note NLP → 60 structured factors + outcomes
 src/analysis.py           profile, correlations, odds ratios, KM, confounding demo
+src/model.py              relapse prediction: logistic / random forest, repeated CV, TSTR
 src/synthesize.py         Gaussian-copula + outcome-model synthetic generator, with validation
 src/export_public.py      k-anonymous public release of the feature table
 scripts/privacy_check.py  pre-commit guard against leaking private data
