@@ -1,11 +1,13 @@
 """Step 3 - Correlation & (cautious) causal analysis of the cleaned cohort.
 
-Questions:
-  Q1  Who is in this clinic? (site, sex, region, spread, treatment)
-  Q2  Which factors move together? (correlation matrix)
-  Q3  After curative treatment, what is associated with the cancer coming back? (relapse)
-  Q4  How fast does it come back? (Kaplan-Meier, time from diagnosis)
-  Q5  Correlation vs causation: a worked confounding example.
+THE PREMISE: if someone has had cancer, will it come back - and for each factor linked to
+it coming back, is that link correlation only, or plausibly causation?
+
+  Q1  Who is in this clinic? (context)
+  Q2  Which factors move together? (correlation matrix, context)
+  Q3  How often, and how fast, does cancer come back? (Kaplan-Meier, at-risk cohort)
+  Q4  Which factors are linked to it coming back? (crude Cox hazard ratios)
+  Q5  Correlation or causation? (adjusted Cox HRs, E-values, trial evidence -> verdict per factor)
 
 Outputs: reports/figures/*.png, reports/tables/*.csv, reports/results.json
 """
@@ -19,7 +21,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
-from lifelines import KaplanMeierFitter
+from lifelines import CoxPHFitter, KaplanMeierFitter
 from lifelines.statistics import logrank_test
 from scipy.stats import fisher_exact
 from statsmodels.stats.multitest import multipletests
@@ -138,173 +140,184 @@ def correlation(df, res):
     res["top_correlations"] = [{"a": a, "b": b, "phi": round(v, 2)} for (a, b), v in pairs.head(15).items()]
 
 
-# ------------------------------------------------------------------ Q3 relapse factors
-def odds_ratio(a, b, c, d):
-    """2x2: exposed relapse a, exposed no-relapse b, unexposed relapse c, unexposed no-relapse d."""
-    _, p = fisher_exact([[a, b], [c, d]])
-    a, b, c, d = (x + 0.5 for x in (a, b, c, d))  # Haldane-Anscombe correction
-    orr = (a * d) / (b * c)
-    se = np.sqrt(1 / a + 1 / b + 1 / c + 1 / d)
-    return orr, np.exp(np.log(orr) - 1.96 * se), np.exp(np.log(orr) + 1.96 * se), p
-
-
-RELAPSE_FACTORS = {
-    "Breast cancer (vs other sites)": lambda d: d.site_group == "Breast",
-    "Triple-negative breast": lambda d: d.breast_subtype == "Triple negative",
-    "HER2-positive breast": lambda d: d.breast_subtype == "HER2+",
-    "Hormone-receptor positive": lambda d: (d.er == 1) | (d.pr == 1),
-    "Grade 3 tumour": lambda d: d.grade == 3,
-    "Neoadjuvant chemo (big tumour at start)": lambda d: d.neoadjuvant_chemo == 1,
-    "Had surgery": lambda d: d.surgery == 1,
-    "Had radiotherapy": lambda d: d.radiotherapy == 1,
-    "On hormonal therapy": lambda d: d.hormonal_therapy == 1,
-    "Treated abroad (Egypt/India/Jordan)": lambda d: d.treated_abroad == 1,
-    "Missed follow-up / delayed care": lambda d: d.missed_followup_or_delay == 1,
-    "Lives in Khartoum": lambda d: d.region == "Khartoum",
-    "≥5 years since diagnosis": lambda d: d.years_since_dx >= 5,
-}
-
-
-def relapse_factors(df, res):
+# ------------------------------------------------------------------ Q3 how often / how fast
+def cohort(df):
     c = df[df.eligible_for_relapse == 1].copy()
-    y = c.relapse.astype(int)
-    rows = []
-    for name, f in RELAPSE_FACTORS.items():
-        x = f(c).fillna(False).astype(bool)
-        a, b = int((x & (y == 1)).sum()), int((x & (y == 0)).sum())
-        cc, dd = int((~x & (y == 1)).sum()), int((~x & (y == 0)).sum())
-        if a + b < 3:
-            continue
-        orr, lo, hi, p = odds_ratio(a, b, cc, dd)
-        rows.append({"factor": name, "n_with": a + b, "relapse_with": f"{a}/{a + b} ({a / (a + b):.0%})",
-                     "relapse_without": f"{cc}/{cc + dd} ({cc / max(cc + dd, 1):.0%})",
-                     "odds_ratio": round(orr, 2), "ci_low": round(lo, 2), "ci_high": round(hi, 2),
-                     "p_fisher": round(p, 4)})
-    t = pd.DataFrame(rows)
-    t["p_fdr"] = multipletests(t.p_fisher, method="fdr_bh")[1].round(4)
-    t = t.sort_values("odds_ratio", ascending=False)
-    t.to_csv(TAB / "relapse_univariate_odds_ratios.csv", index=False)
-
-    # forest plot
-    fig, ax = plt.subplots(figsize=(8.5, 0.42 * len(t) + 1.4))
-    yy = np.arange(len(t))[::-1]
-    for yi, r in zip(yy, t.itertuples()):
-        col = ORANGE if r.ci_low > 1 else (BLUE if r.ci_high < 1 else GRAY)
-        ax.plot([r.ci_low, r.ci_high], [yi, yi], color=col, lw=2, solid_capstyle="round")
-        ax.plot(r.odds_ratio, yi, "o", color=col, ms=8, mec=SURF, mew=2)
-        ax.text(60, yi, r.relapse_with, va="center", fontsize=8, color=INK2)
-    ax.axvline(1, color=INK2, lw=1, ls="--")
-    ax.set_xscale("log")
-    ax.set_xlim(0.03, 200)
-    ax.set_yticks(yy, t.factor)
-    ax.grid(axis="y", visible=False)
-    ax.set_xlabel("Odds ratio for relapse (log scale, 95% CI)  ← less relapse | more relapse →")
-    ax.set_ylim(-0.7, len(t) - 0.1)
-    ax.text(60, len(t) - 0.5, "relapse rate", fontsize=8, color=INK2, weight="bold")
-    ax.set_title(f"What travels with relapse?\n{len(c)} curatively-treated patients, {int(y.sum())} relapsed")
-    save(fig, "08_relapse_forest_plot.png")
-
-    # multivariable logistic (small n -> few covariates, ridge-penalised for stability)
-    X = pd.DataFrame({
-        "years_since_dx": c.years_since_dx.fillna(c.years_since_dx.median()),
-        "breast": (c.site_group == "Breast").astype(int),
-        "triple_negative": (c.breast_subtype == "Triple negative").astype(int),
-        "hormonal_therapy": c.hormonal_therapy,
-        "radiotherapy": c.radiotherapy,
-    }).astype(float)
-    m = sm.Logit(y, sm.add_constant(X)).fit(disp=0)
-    ci = np.exp(m.conf_int())
-    mv = pd.DataFrame({"odds_ratio": np.exp(m.params).round(2), "ci_low": ci[0].round(2),
-                       "ci_high": ci[1].round(2), "p": m.pvalues.round(4)}).drop("const")
-    mv.to_csv(TAB / "relapse_multivariable_logit.csv")
-
-    res["relapse"] = {
-        "eligible": len(c), "relapsed": int(y.sum()), "rate": round(y.mean(), 3),
-        "univariate": t.to_dict(orient="records"),
-        "multivariable": mv.to_dict(orient="index"),
-    }
+    c["breast"] = (c.site_group == "Breast").astype(int)
+    c["hr_pos"] = ((c.er == 1) | (c.pr == 1)).astype(int)
+    c["triple_negative"] = (c.breast_subtype == "Triple negative").astype(int)
+    c["grade3"] = (c.grade == 3).astype(int)
+    c["khartoum"] = (c.region == "Khartoum").astype(int)
+    c["relapse"] = c.relapse.astype(int)
     return c
 
 
-# ------------------------------------------------------------------ Q4 time to relapse
-def time_to_relapse(c, res):
-    d = c[c.dx_year.notna()].copy()
-    # event time: documented relapse year if known, else registration year (upper bound)
-    d["T"] = np.where(d.relapse == 1, d.recurrence_year.fillna(d.registered_year), d.registered_year) - d.dx_year
-    d["T"] = d["T"].clip(lower=0.5)
-    fig, axes = plt.subplots(1, 2, figsize=(11, 4.2), sharey=True)
-    kmf = KaplanMeierFitter()
-    kmf.fit(d["T"], d.relapse, label="All curatively-treated")
-    kmf.plot_survival_function(ax=axes[0], color=BLUE, ci_show=True, lw=2)
-    axes[0].set_title("Relapse-free survival (all sites)")
-    axes[0].set_xlabel("Years since diagnosis")
-    axes[0].set_ylabel("Probability still relapse-free")
-    surv = {int(t): round(float(kmf.predict(t)), 2) for t in (2, 5, 8)}
+def events_needed(hr, share_exposed=0.5, alpha_z=1.96, power_z=0.84):
+    """Schoenfeld: relapses needed to detect a hazard ratio with 80% power (two-sided 5%)."""
+    return int(np.ceil((alpha_z + power_z) ** 2 / (share_exposed * (1 - share_exposed) * np.log(hr) ** 2)))
 
-    b = d[d.site_group == "Breast"]
-    tn = b.breast_subtype == "Triple negative"
-    lr = None
-    for mask, lab, col in ((tn, "Triple-negative", ORANGE), (~tn, "Other / unknown subtype", BLUE)):
-        if mask.sum() >= 3:
-            KaplanMeierFitter().fit(b["T"][mask], b.relapse[mask], label=f"{lab} (n={mask.sum()})") \
-                .plot_survival_function(ax=axes[1], color=col, ci_show=False, lw=2)
-    if tn.sum() >= 3:
-        lr = logrank_test(b["T"][tn], b["T"][~tn], b.relapse[tn], b.relapse[~tn]).p_value
-    axes[1].set_title(f"Breast: triple-negative vs rest (log-rank p={lr:.2f})" if lr else "Breast")
-    axes[1].set_xlabel("Years since diagnosis")
+
+def how_often(c, res, df):
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4.2), sharey=True)
+    kmf = KaplanMeierFitter().fit(c.rfs_years, c.relapse, label=f"All at-risk patients (n={len(c)})")
+    kmf.plot_survival_function(ax=axes[0], color=BLUE, lw=2)
+    axes[0].set_title("How often does cancer come back?")
+    axes[0].set_ylabel("Probability still relapse-free")
+    for mask, lab, col in ((c.breast == 1, "Breast", ORANGE), (c.breast == 0, "Other cancers", BLUE)):
+        KaplanMeierFitter().fit(c.rfs_years[mask], c.relapse[mask], label=f"{lab} (n={mask.sum()})") \
+            .plot_survival_function(ax=axes[1], color=col, lw=2, ci_show=False)
+    lr = logrank_test(c.rfs_years[c.breast == 1], c.rfs_years[c.breast == 0],
+                      c.relapse[c.breast == 1], c.relapse[c.breast == 0]).p_value
+    axes[1].set_title(f"Breast vs other cancers (log-rank p={lr:.3f})")
     for ax in axes:
+        ax.set_xlabel("Years since diagnosis")
         ax.set_ylim(0, 1.05)
     save(fig, "09_relapse_free_survival.png")
-    res["km"] = {"n": len(d), "relapse_free_at_years": surv, "breast_tn_logrank_p": lr}
-
-
-# ------------------------------------------------------------------ Q5 confounding demo
-def confounding_demo(c, res):
-    """Does hormonal therapy 'prevent' relapse? Crude vs stratified by cancer site / receptor status."""
-    from statsmodels.stats.contingency_tables import StratifiedTable
-    c = c.copy()
-    c["stratum"] = np.where(c.site_group != "Breast", "Other sites",
-                            np.where((c.er == 1) | (c.pr == 1), "Breast, HR+", "Breast, HR- or unknown"))
-    out, tab, tables = {}, [], []
-    for stratum, g in [("Crude (all)", c)] + list(c.groupby("stratum")):
-        x, y = g.hormonal_therapy == 1, g.relapse == 1
-        a, b, cc, dd = (x & y).sum(), (x & ~y).sum(), (~x & y).sum(), (~x & ~y).sum()
-        orr, lo, hi, p = odds_ratio(a, b, cc, dd)
-        out[stratum] = {"OR": round(orr, 2), "ci": [round(lo, 2), round(hi, 2)], "n": len(g),
-                        "on_HT": int(x.sum())}
-        tab.append([stratum, len(g), f"{a}/{a + b}", f"{cc}/{cc + dd}", f"{orr:.2f} ({lo:.2f}-{hi:.2f})"])
-        if stratum != "Crude (all)":
-            tables.append(np.array([[a, b], [cc, dd]]) + 0.5)
-    st = StratifiedTable(tables)
-    lo, hi = st.oddsratio_pooled_confint()
-    out["Mantel-Haenszel adjusted"] = {"OR": round(st.oddsratio_pooled, 2), "ci": [round(lo, 2), round(hi, 2)]}
-    tab.append(["Mantel-Haenszel (site/HR adjusted)", len(c), "", "",
-                f"{st.oddsratio_pooled:.2f} ({lo:.2f}-{hi:.2f})"])
-    pd.DataFrame(tab, columns=["stratum", "n", "relapse on HT", "relapse no HT", "OR (95% CI)"]) \
-        .to_csv(TAB / "confounding_hormonal_therapy.csv", index=False)
-    res["confounding_hormonal_therapy"] = out
-
-    # appointment-based progression proxy agrees with text-mined relapse?
-    res["booking_signal"] = {
-        "escalated_from_HT_patients": int(c.escalated_from_HT.sum()),
-        "relapse_rate_if_escalated": round(c[c.escalated_from_HT == 1].relapse.mean(), 2)
-        if c.escalated_from_HT.sum() else None,
+    res["premise"] = {
+        "at_risk_cohort": len(c), "relapsed": int(c.relapse.sum()), "crude_rate": round(c.relapse.mean(), 3),
+        "relapse_free": {f"{t}y": round(float(kmf.predict(t)), 2) for t in (2, 5, 10)},
+        "median_followup_years": float(c.rfs_years.median()),
+        "breast_vs_other_logrank_p": round(lr, 3),
+        "second_primary_cancers_mentioned_all_patients": int(df.second_primary.sum()),
+        "relapses_needed_to_detect_HR_0.5": events_needed(0.5),
+        "relapses_needed_to_detect_HR_0.7": events_needed(0.7),
+        "cohort_rule": "malignant, not metastatic at diagnosis, received treatment, diagnosed >= 1 year before note",
     }
+
+
+# ------------------------------------------------------------------ Q4 + Q5 correlation vs causation
+# factor -> (column, adjustment set, population, kind, trial/biology evidence)
+FACTORS = {
+    "Breast cancer (vs other sites)": ("breast", [], "all", "marker",
+                                       "Many breast cancers have good long-term control; varies by subtype"),
+    "Hormone-receptor positive (breast)": ("hr_pos", ["grade3"], "breast", "marker",
+                                           "HR+ relapses less early on, but can relapse late"),
+    "Triple-negative (breast)": ("triple_negative", ["grade3"], "breast", "marker",
+                                 "Well established: relapses more often and earlier"),
+    "Grade 3 tumour": ("grade3", ["breast"], "all", "marker", "Well established: higher grade, higher risk"),
+    "Surgery": ("surgery", ["breast"], "all", "treatment", "Yes, for operable disease"),
+    "Radiotherapy": ("radiotherapy", ["breast", "surgery"], "all", "treatment",
+                     "Yes: trials show adjuvant RT cuts local recurrence"),
+    "Hormonal therapy": ("hormonal_therapy", ["hr_pos", "surgery", "radiotherapy"], "breast", "treatment",
+                         "Yes: trials show ~5 yrs of tamoxifen cuts recurrence in HR+ breast cancer"),
+    "Neoadjuvant chemo (large tumour at start)": ("neoadjuvant_chemo", ["breast"], "all", "marker",
+                                                  "Marks larger / locally advanced tumours"),
+    "Treated abroad": ("treated_abroad", ["breast"], "all", "access", "No direct evidence"),
+    "Missed follow-up / delayed care": ("missed_followup_or_delay", ["breast"], "all", "access",
+                                        "Delay worsens outcomes in general"),
+    "Lives in Khartoum (capital)": ("khartoum", ["breast"], "all", "access", "Access to care, no direct evidence"),
+}
+
+
+def cox_hr(d, col, adj):
+    cols = [col] + [a for a in adj if a != col and d[a].nunique() > 1]
+    cph = CoxPHFitter(penalizer=0.01).fit(d[cols + ["rfs_years", "relapse"]], "rfs_years", "relapse")
+    s = cph.summary.loc[col]
+    return float(s["exp(coef)"]), float(s["exp(coef) lower 95%"]), float(s["exp(coef) upper 95%"]), \
+        float(s["p"]), len(cols) - 1
+
+
+def e_value(hr, lo, hi):
+    """VanderWeele & Ding E-value for a hazard ratio with a common outcome (>15%)."""
+    def rr(h):
+        return (1 - 0.5 ** np.sqrt(h)) / (1 - 0.5 ** np.sqrt(1 / h))
+
+    def ev(r):
+        r = 1 / r if r < 1 else r
+        return r + np.sqrt(r * (r - 1))
+    point = ev(rr(hr))
+    bound = 1.0 if lo <= 1 <= hi else ev(rr(lo if hr > 1 else hi))
+    return round(point, 2), round(bound, 2)
+
+
+def verdict(kind, crude_sig, adj_sig, crude_hr, adj_hr, n_adj):
+    if not crude_sig and not adj_sig:
+        return "No clear link (too few patients to tell)"
+    if kind == "marker":
+        return "Risk marker: real association, but not something you can change"
+    if crude_sig and not adj_sig and n_adj:
+        return "Correlation: explained by measured confounders"
+    return "Association survives adjustment; causal only if no stronger unmeasured confounder (e.g. stage)"
+
+
+def correlation_vs_causation(c, res):
+    rows = []
+    for name, (col, adj, pop, kind, evidence) in FACTORS.items():
+        d = c if pop == "all" else c[c.breast == 1]
+        x = d[col] == 1
+        if x.sum() < 5 or (~x).sum() < 5:
+            continue
+        hr, lo, hi, p, _ = cox_hr(d, col, [])
+        ahr, alo, ahi, ap, n_adj = cox_hr(d, col, adj) if adj else (hr, lo, hi, p, 0)
+        ev, ev_ci = e_value(ahr, alo, ahi)
+        rows.append({
+            "factor": name, "population": "breast only" if pop == "breast" else "all sites", "n": len(d),
+            "relapse_with": f"{int(d.relapse[x].sum())}/{int(x.sum())} ({d.relapse[x].mean():.0%})",
+            "relapse_without": f"{int(d.relapse[~x].sum())}/{int((~x).sum())} ({d.relapse[~x].mean():.0%})",
+            "crude_HR": round(hr, 2), "crude_CI": f"{lo:.2f}-{hi:.2f}", "crude_p": round(p, 3),
+            "adjusted_for": ", ".join(adj) or "-", "adjusted_HR": round(ahr, 2), "adjusted_CI": f"{alo:.2f}-{ahi:.2f}",
+            "adjusted_p": round(ap, 3), "E_value": ev, "E_value_CI": ev_ci,
+            "outside_evidence": evidence,
+            "verdict": verdict(kind, p < 0.05, ap < 0.05, hr, ahr, n_adj),
+            "_lo": lo, "_hi": hi, "_alo": alo, "_ahi": ahi,
+        })
+    t = pd.DataFrame(rows)
+    t["crude_p_fdr"] = multipletests(t.crude_p, method="fdr_bh")[1].round(3)
+    t.drop(columns=[c for c in t.columns if c.startswith("_")]) \
+        .to_csv(TAB / "correlation_vs_causation.csv", index=False)
+
+    # forest plot: crude (hollow) vs adjusted (filled)
+    t = t.iloc[::-1].reset_index(drop=True)
+    fig, ax = plt.subplots(figsize=(9.5, 0.55 * len(t) + 1.6))
+    for i, r in t.iterrows():
+        col = ORANGE if r._alo > 1 else (BLUE if r._ahi < 1 else GRAY)
+        ax.plot([r._lo, r._hi], [i + 0.15, i + 0.15], color=GRAY, lw=1.2)
+        ax.plot(r.crude_HR, i + 0.15, "o", mfc=SURF, mec=GRAY, mew=1.5, ms=7)
+        ax.plot([r._alo, r._ahi], [i - 0.15, i - 0.15], color=col, lw=2.2, solid_capstyle="round")
+        ax.plot(r.adjusted_HR, i - 0.15, "o", color=col, ms=8, mec=SURF, mew=1.5)
+        ax.text(25, i, r.relapse_with, va="center", fontsize=8, color=INK2)
+    ax.axvline(1, color=INK2, lw=1, ls="--")
+    ax.set_xscale("log")
+    ax.set_xlim(0.05, 60)
+    ax.set_yticks(range(len(t)), [f"{f}  [{p}]" for f, p in zip(t.factor, t.population)])
+    ax.grid(axis="y", visible=False)
+    ax.set_ylim(-0.7, len(t) - 0.1)
+    ax.text(25, len(t) - 0.45, "relapse rate", fontsize=8, color=INK2, weight="bold")
+    ax.set_xlabel("Hazard ratio for cancer coming back (log scale, 95% CI)  ← less | more →")
+    ax.set_title(f"Correlation (hollow, crude) vs adjusted (filled)\n"
+                 f"{len(c)} at-risk patients, {int(c.relapse.sum())} relapses", loc="left")
+    save(fig, "08_relapse_forest_plot.png")
+
+    out = t.iloc[::-1].drop(columns=[c for c in t.columns if c.startswith("_")])
+    res["correlation_vs_causation"] = out.to_dict(orient="records")
+
+    # multivariable Cox model for the whole picture
+    cols = ["breast", "grade3", "surgery", "radiotherapy", "hormonal_therapy", "neoadjuvant_chemo"]
+    cph = CoxPHFitter(penalizer=0.01).fit(c[cols + ["rfs_years", "relapse"]], "rfs_years", "relapse")
+    mv = cph.summary[["exp(coef)", "exp(coef) lower 95%", "exp(coef) upper 95%", "p"]].round(3)
+    mv.columns = ["HR", "ci_low", "ci_high", "p"]
+    mv.to_csv(TAB / "relapse_multivariable_cox.csv")
+    res["multivariable_cox"] = {"concordance": round(cph.concordance_index_, 3), **mv.to_dict(orient="index")}
 
 
 def main():
     FIG.mkdir(parents=True, exist_ok=True)
     TAB.mkdir(parents=True, exist_ok=True)
+    for old in ("relapse_univariate_odds_ratios.csv", "relapse_multivariable_logit.csv",
+                "confounding_hormonal_therapy.csv"):
+        (TAB / old).unlink(missing_ok=True)
     df = pd.read_csv(DATA)
     df["breast_subtype"] = df.breast_subtype.fillna("")
     res = {}
     profile(df, res)
     correlation(df, res)
-    c = relapse_factors(df, res)
-    time_to_relapse(c, res)
-    confounding_demo(c, res)
+    c = cohort(df)
+    how_often(c, res, df)
+    correlation_vs_causation(c, res)
     (ROOT / "reports" / "results.json").write_text(json.dumps(res, indent=2, default=float, ensure_ascii=False))
-    print(json.dumps(res, indent=1, default=float, ensure_ascii=False)[:6000])
+    print(json.dumps({k: res[k] for k in ("premise", "multivariable_cox")}, indent=1, default=float))
+    print(pd.read_csv(TAB / "correlation_vs_causation.csv")[["factor", "population", "relapse_with", "relapse_without",
+          "crude_HR", "crude_CI", "adjusted_HR", "adjusted_CI", "E_value", "verdict"]].to_string())
 
 
 if __name__ == "__main__":

@@ -38,6 +38,7 @@ def main():
     d = pd.read_csv(SRC)
     d["dx_period"] = d.dx_year.map(dx_period)
     d["years_since_dx"] = d.years_since_dx.clip(upper=10)
+    d["rfs_years"] = d.rfs_years.clip(upper=10)
     d = d.drop(columns=DROP)
 
     for col, filler in (("region", "Suppressed"), ("sex", "Unknown"), ("dx_period", "unknown"),

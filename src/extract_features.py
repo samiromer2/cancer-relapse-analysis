@@ -315,19 +315,27 @@ def build(patients: pd.DataFrame, appts: pd.DataFrame) -> pd.DataFrame:
         for r, n in zip(df.itertuples(), patients.clinical_note.fillna(""))
     ]
 
-    # Outcome A - relapse: cancer came back after curative-intent treatment.
-    #   eligible = malignant, not metastatic at diagnosis, had curative-intent treatment,
-    #   and either an event is documented or >= 1 year has passed since diagnosis.
-    curative = (df.surgery == 1) | (df.adjuvant_chemo == 1) | (df.neoadjuvant_chemo == 1) | \
-               ((df.radiotherapy == 1) & (df.hormonal_therapy == 1))
+    # Outcome A - relapse: "after someone has had cancer, does it come back?"
+    # The at-risk cohort is defined by the SAME rule for patients with and without relapse
+    # (an earlier version required 'curative' treatment only from non-relapsers, which made
+    # every treatment look protective):
+    #   malignant, not metastatic at diagnosis, received any cancer treatment,
+    #   diagnosis year known and >= 1 year before the note.
+    notes = patients.clinical_note.fillna("")
+    treated = (df.surgery == 1) | (df.chemotherapy == 1) | (df.radiotherapy == 1) | \
+              (df.hormonal_therapy == 1) | pd.Series([has(r"complete[d]? (treatment|ttt)", n) for n in notes],
+                                                     index=df.index).astype(bool)
     base = (df.non_malignant_tumour == 0) & (df.metastatic_at_dx == 0)
     event = df.recurrence_or_progression == 1
-    long_hist = pd.Series([has(r"long history of (recurrence|treating mets)|completed treatment \\d+ years ago",
-                               n) for n in patients.clinical_note.fillna("")], index=df.index) == 1
-    eligible = base & ((event & ((df.years_since_dx >= 1) | df.years_since_dx.isna() | long_hist)) |
-                       (~event & curative & (df.years_since_dx >= 1)))
+    eligible = base & treated & (df.years_since_dx >= 1)
     df["eligible_for_relapse"] = eligible.astype(int)
     df["relapse"] = np.where(eligible, event.astype(int), np.nan)
+    # time-to-event: years from diagnosis to relapse (documented year, else the note year as an
+    # upper bound) or to the note year (censored) for patients without relapse
+    t_event = df.recurrence_year.fillna(df.registered_year) - df.dx_year
+    t_cens = df.registered_year - df.dx_year
+    df["rfs_years"] = np.where(eligible, np.where(event, t_event, t_cens), np.nan)
+    df["rfs_years"] = df.rfs_years.clip(lower=0.5)
 
     # Outcome B - progression of disease that was already metastatic at diagnosis
     df["progression_if_metastatic"] = np.where(df.metastatic_at_dx == 1, event.astype(int), np.nan)

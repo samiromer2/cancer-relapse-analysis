@@ -4,11 +4,12 @@ Business question: the clinic has limited follow-up slots and scans. Can we flag
 treated patients most likely to relapse so they are seen first?
 
   target y   : relapse (1 = cancer came back after curative-intent treatment)
-  cohort     : eligible_for_relapse == 1  (n = 87, 31 events)
+  cohort     : eligible_for_relapse == 1  (n = 138, 30 events; same rule for relapsers and non-relapsers)
   features X : only information known BEFORE relapse (see LEAKAGE below)
   validation : repeated stratified 5-fold CV (20 repeats) - n is too small for one train/test split
   threshold  : flag a patient when predicted risk > cohort relapse rate (fixed in advance,
                favours recall: a missed relapse costs more than an extra scan)
+  time-aware : cross-validated Cox model (C-index), because follow-up ranges 1-17 years
 
 Runs on the PUBLIC k-anonymous file, so anyone can reproduce it from the repository.
 If the private feature file is present, it also runs a fold-honest
@@ -140,6 +141,36 @@ def operating_points(y, oof):
     return pd.DataFrame(rows).round(3)
 
 
+def cox_cv(path):
+    """Time-aware check: cross-validated concordance (C-index) of a Cox model.
+
+    Patients are followed 1-17 years, so a yes/no classifier mixes 'did not relapse' with
+    'not followed long enough'. The C-index asks: of two patients, does the model give the
+    higher risk to the one who relapses first?  0.5 = coin flip.
+    """
+    from lifelines import CoxPHFitter
+    from lifelines.utils import concordance_index
+    d = pd.read_csv(path)
+    d = d[d.eligible_for_relapse == 1].copy()
+    d["breast"] = (d.site_group == "Breast").astype(int)
+    d["grade3"] = (d.grade == 3).astype(int)
+    d["relapse"] = d.relapse.astype(int)
+    cols = ["breast", "grade3", "surgery", "radiotherapy", "hormonal_therapy", "neoadjuvant_chemo"]
+    out = {}
+    for label, use in (("Cox: site + grade + treatments", cols), ("Cox: breast vs other only", ["breast"])):
+        scores = []
+        for r in range(N_REPEATS):
+            skf = StratifiedKFold(5, shuffle=True, random_state=r)
+            risk = np.zeros(len(d))
+            for tr, te in skf.split(d, d.relapse):
+                cph = CoxPHFitter(penalizer=0.1).fit(d.iloc[tr][use + ["rfs_years", "relapse"]], "rfs_years",
+                                                     "relapse")
+                risk[te] = cph.predict_partial_hazard(d.iloc[te][use]).values
+            scores.append(concordance_index(d.rfs_years, -risk, d.relapse))
+        out[label] = {"c_index_mean": round(float(np.mean(scores)), 3), "c_index_sd": round(float(np.std(scores)), 3)}
+    return out
+
+
 def tstr(rng_seed=SEED):
     """Train on Synthetic, Test on Real - synthesiser refit inside each fold (no leakage)."""
     if not PRIVATE.exists():
@@ -221,7 +252,7 @@ def plot_confusion(y, oof, thr):
         ax.set_xticks([0, 1], ["Predicted: no", "Predicted: relapse"])
         ax.set_yticks([0, 1], ["Actual: no", "Actual: relapse"])
         ax.set_title(name, loc="left", weight="bold", fontsize=10)
-    fig.suptitle("Average confusion matrix per CV repeat (n = 87 patients)", x=0.01, ha="left", weight="bold")
+    fig.suptitle(f"Average confusion matrix per CV repeat (n = {len(y)} patients)", x=0.01, ha="left", weight="bold")
     fig.tight_layout()
     fig.savefig(FIG / "12_confusion_matrices.png", dpi=160)
     plt.close(fig)
@@ -261,19 +292,20 @@ def main():
     _, sens, _, _ = cross_validate(Xs, y)
     out = {
         "cohort": {"n": int(len(y)), "relapses": int(y.sum())},
-        "threshold_rule": "flag the top 36% highest-risk patients (= cohort relapse rate)",
+        "threshold_rule": f"flag the top {y.mean():.0%} highest-risk patients (= cohort relapse rate)",
         "metrics": {m: {k: summary.loc[m, (k, "mean")] for k in ("recall", "precision", "f1", "accuracy",
                                                                    "roc_auc", "brier")} for m in summary.index},
         "operating_points": ops.to_dict(orient="records"),
         "sensitivity_without_hormonal_therapy_auc": {m: sens.loc[m, ("roc_auc", "mean")] for m in sens.index},
         "top_logistic_coefficients": coefs.mean(axis=1).sort_values(key=abs, ascending=False).head(8).round(2)
         .to_dict(),
+        "cox_cross_validated": cox_cv(PUBLIC),
         "tstr": tstr(),
     }
     (ROOT / "reports" / "model_results.json").write_text(json.dumps(out, indent=2, default=float))
     print(summary.to_string())
     print(ops.to_string())
-    print(json.dumps({k: out[k] for k in ("sensitivity_without_hormonal_therapy_auc", "top_logistic_coefficients",
+    print(json.dumps({k: out[k] for k in ("cox_cross_validated", "sensitivity_without_hormonal_therapy_auc", "top_logistic_coefficients",
                                           "tstr")}, indent=1, default=float))
 
 

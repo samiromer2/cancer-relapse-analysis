@@ -1,62 +1,62 @@
 {
   "marginal_TVD": {
-    "region": 0.014,
-    "site_group": 0.021,
-    "sex": 0.036,
-    "breast_subtype": 0.157,
-    "histology": 0.012,
-    "ses_code": 0.017,
+    "region": 0.011,
+    "site_group": 0.02,
+    "sex": 0.043,
+    "breast_subtype": 0.147,
+    "histology": 0.006,
+    "ses_code": 0.014,
     "er": 0.044,
-    "pr": 0.025,
-    "her2": 0.024,
-    "grade": 0.007,
-    "dx_year": 0.02,
-    "years_since_dx": 0.007,
+    "pr": 0.028,
+    "her2": 0.011,
+    "grade": 0.006,
+    "dx_year": 0.015,
+    "years_since_dx": 0.016,
     "n_visits": 0.015,
     "n_units_seen": 1.0,
-    "metastatic_at_dx": 0.007,
-    "metastatic": 0.081,
-    "mets_bone": 0.056,
-    "mets_liver": 0.035,
-    "mets_lung": 0.038,
-    "mets_brain": 0.011,
-    "surgery": 0.003,
-    "chemotherapy": 0.005,
-    "neoadjuvant_chemo": 0.003,
-    "radiotherapy": 0.012,
-    "hormonal_therapy": 0.01,
-    "bisphosphonate": 0.003,
-    "opioid": 0.0,
-    "palliative_referral": 0.011,
+    "metastatic_at_dx": 0.008,
+    "metastatic": 0.088,
+    "mets_bone": 0.06,
+    "mets_liver": 0.037,
+    "mets_lung": 0.037,
+    "mets_brain": 0.013,
+    "surgery": 0.002,
+    "chemotherapy": 0.006,
+    "neoadjuvant_chemo": 0.007,
+    "radiotherapy": 0.005,
+    "hormonal_therapy": 0.004,
+    "bisphosphonate": 0.002,
+    "opioid": 0.001,
+    "palliative_referral": 0.006,
     "treated_abroad": 0.001,
-    "missed_followup_or_delay": 0.002,
-    "recurrence_or_progression": 0.055,
-    "eligible_for_relapse": 0.028
+    "missed_followup_or_delay": 0.005,
+    "recurrence_or_progression": 0.039,
+    "eligible_for_relapse": 0.054
   },
   "marginal_TVD_mean": 0.055,
-  "corr_mean_abs_diff": 0.095,
+  "corr_mean_abs_diff": 0.092,
   "utility": {
     "relapse_rate": {
-      "real": 0.356,
-      "synthetic": 0.354
+      "real": 0.217,
+      "synthetic": 0.216
     },
     "OR_hormonal_therapy": {
-      "real": 0.18,
-      "synthetic": 0.2
+      "real": 0.69,
+      "synthetic": 0.66
     },
     "OR_radiotherapy": {
-      "real": 0.26,
-      "synthetic": 0.32
+      "real": 0.59,
+      "synthetic": 0.63
     },
     "OR_breast": {
-      "real": 0.24,
-      "synthetic": 0.32
+      "real": 0.63,
+      "synthetic": 0.59
     }
   },
   "privacy": {
     "exact_copies_of_real_rows": 0,
-    "median_DCR_synthetic_to_real": 2.177,
-    "median_NN_real_to_real": 1.732,
-    "share_synthetic_closer_than_5th_pct_real_NN": 0.006
+    "median_DCR_synthetic_to_real": 2.2,
+    "median_NN_real_to_real": 1.765,
+    "share_synthetic_closer_than_5th_pct_real_NN": 0.003
   }
 }

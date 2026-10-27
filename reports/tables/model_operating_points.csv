@@ -1,13 +1,13 @@
 model,flag_top_share,recall,precision,f1,patients_flagged_per_100,relapses_caught_per_100
-Logistic regression,0.2,0.366,0.631,0.463,20,13.046
-Logistic regression,0.36,0.518,0.517,0.517,36,18.448
-Logistic regression,0.5,0.668,0.47,0.552,50,23.793
-Logistic regression,0.7,0.834,0.424,0.562,70,29.713
-Random forest,0.2,0.377,0.648,0.477,20,13.448
-Random forest,0.36,0.569,0.569,0.569,36,20.287
-Random forest,0.5,0.726,0.511,0.6,50,25.862
-Random forest,0.7,0.826,0.419,0.556,70,29.425
-Baseline (random flagging),0.2,0.198,0.342,0.251,20,7.069
-Baseline (random flagging),0.36,0.342,0.342,0.342,36,12.184
-Baseline (random flagging),0.5,0.482,0.34,0.399,50,17.184
-Baseline (random flagging),0.7,0.694,0.352,0.467,70,24.713
+Logistic regression,0.2,0.172,0.184,0.178,20,3.732
+Logistic regression,0.36,0.358,0.215,0.269,36,7.79
+Logistic regression,0.5,0.487,0.212,0.295,50,10.58
+Logistic regression,0.7,0.69,0.216,0.329,70,15.0
+Random forest,0.2,0.365,0.39,0.377,20,7.935
+Random forest,0.36,0.458,0.275,0.344,36,9.964
+Random forest,0.5,0.558,0.243,0.338,50,12.138
+Random forest,0.7,0.747,0.233,0.356,70,16.232
+Baseline (random flagging),0.2,0.177,0.189,0.183,20,3.841
+Baseline (random flagging),0.36,0.34,0.204,0.255,36,7.391
+Baseline (random flagging),0.5,0.473,0.206,0.287,50,10.29
+Baseline (random flagging),0.7,0.7,0.219,0.333,70,15.217

@@ -1,163 +1,173 @@
 {
   "cohort": {
-    "n": 87,
-    "relapses": 31
+    "n": 138,
+    "relapses": 30
   },
-  "threshold_rule": "flag the top 36% highest-risk patients (= cohort relapse rate)",
+  "threshold_rule": "flag the top 22% highest-risk patients (= cohort relapse rate)",
   "metrics": {
     "Baseline (random flagging)": {
-      "recall": 0.342,
-      "precision": 0.342,
-      "f1": 0.342,
-      "accuracy": 0.531,
-      "roc_auc": 0.482,
-      "brier": 0.34
+      "recall": 0.19,
+      "precision": 0.19,
+      "f1": 0.19,
+      "accuracy": 0.648,
+      "roc_auc": 0.492,
+      "brier": 0.334
     },
     "Logistic regression": {
-      "recall": 0.518,
-      "precision": 0.517,
-      "f1": 0.517,
-      "accuracy": 0.656,
-      "roc_auc": 0.693,
-      "brier": 0.215
+      "recall": 0.187,
+      "precision": 0.187,
+      "f1": 0.187,
+      "accuracy": 0.646,
+      "roc_auc": 0.475,
+      "brier": 0.256
     },
     "Random forest": {
-      "recall": 0.569,
-      "precision": 0.569,
-      "f1": 0.569,
-      "accuracy": 0.693,
-      "roc_auc": 0.714,
-      "brier": 0.211
+      "recall": 0.375,
+      "precision": 0.375,
+      "f1": 0.375,
+      "accuracy": 0.728,
+      "roc_auc": 0.588,
+      "brier": 0.23
     }
   },
   "operating_points": [
     {
       "model": "Logistic regression",
       "flag_top_share": 0.2,
-      "recall": 0.366,
-      "precision": 0.631,
-      "f1": 0.463,
+      "recall": 0.172,
+      "precision": 0.184,
+      "f1": 0.178,
       "patients_flagged_per_100": 20,
-      "relapses_caught_per_100": 13.046
+      "relapses_caught_per_100": 3.732
     },
     {
       "model": "Logistic regression",
       "flag_top_share": 0.36,
-      "recall": 0.518,
-      "precision": 0.517,
-      "f1": 0.517,
+      "recall": 0.358,
+      "precision": 0.215,
+      "f1": 0.269,
       "patients_flagged_per_100": 36,
-      "relapses_caught_per_100": 18.448
+      "relapses_caught_per_100": 7.79
     },
     {
       "model": "Logistic regression",
       "flag_top_share": 0.5,
-      "recall": 0.668,
-      "precision": 0.47,
-      "f1": 0.552,
+      "recall": 0.487,
+      "precision": 0.212,
+      "f1": 0.295,
       "patients_flagged_per_100": 50,
-      "relapses_caught_per_100": 23.793
+      "relapses_caught_per_100": 10.58
     },
     {
       "model": "Logistic regression",
       "flag_top_share": 0.7,
-      "recall": 0.834,
-      "precision": 0.424,
-      "f1": 0.562,
+      "recall": 0.69,
+      "precision": 0.216,
+      "f1": 0.329,
       "patients_flagged_per_100": 70,
-      "relapses_caught_per_100": 29.713
+      "relapses_caught_per_100": 15.0
     },
     {
       "model": "Random forest",
       "flag_top_share": 0.2,
-      "recall": 0.377,
-      "precision": 0.648,
-      "f1": 0.477,
+      "recall": 0.365,
+      "precision": 0.39,
+      "f1": 0.377,
       "patients_flagged_per_100": 20,
-      "relapses_caught_per_100": 13.448
+      "relapses_caught_per_100": 7.935
     },
     {
       "model": "Random forest",
       "flag_top_share": 0.36,
-      "recall": 0.569,
-      "precision": 0.569,
-      "f1": 0.569,
+      "recall": 0.458,
+      "precision": 0.275,
+      "f1": 0.344,
       "patients_flagged_per_100": 36,
-      "relapses_caught_per_100": 20.287
+      "relapses_caught_per_100": 9.964
     },
     {
       "model": "Random forest",
       "flag_top_share": 0.5,
-      "recall": 0.726,
-      "precision": 0.511,
-      "f1": 0.6,
+      "recall": 0.558,
+      "precision": 0.243,
+      "f1": 0.338,
       "patients_flagged_per_100": 50,
-      "relapses_caught_per_100": 25.862
+      "relapses_caught_per_100": 12.138
     },
     {
       "model": "Random forest",
       "flag_top_share": 0.7,
-      "recall": 0.826,
-      "precision": 0.419,
-      "f1": 0.556,
+      "recall": 0.747,
+      "precision": 0.233,
+      "f1": 0.356,
       "patients_flagged_per_100": 70,
-      "relapses_caught_per_100": 29.425
+      "relapses_caught_per_100": 16.232
     },
     {
       "model": "Baseline (random flagging)",
       "flag_top_share": 0.2,
-      "recall": 0.198,
-      "precision": 0.342,
-      "f1": 0.251,
+      "recall": 0.177,
+      "precision": 0.189,
+      "f1": 0.183,
       "patients_flagged_per_100": 20,
-      "relapses_caught_per_100": 7.069
+      "relapses_caught_per_100": 3.841
     },
     {
       "model": "Baseline (random flagging)",
       "flag_top_share": 0.36,
-      "recall": 0.342,
-      "precision": 0.342,
-      "f1": 0.342,
+      "recall": 0.34,
+      "precision": 0.204,
+      "f1": 0.255,
       "patients_flagged_per_100": 36,
-      "relapses_caught_per_100": 12.184
+      "relapses_caught_per_100": 7.391
     },
     {
       "model": "Baseline (random flagging)",
       "flag_top_share": 0.5,
-      "recall": 0.482,
-      "precision": 0.34,
-      "f1": 0.399,
+      "recall": 0.473,
+      "precision": 0.206,
+      "f1": 0.287,
       "patients_flagged_per_100": 50,
-      "relapses_caught_per_100": 17.184
+      "relapses_caught_per_100": 10.29
     },
     {
       "model": "Baseline (random flagging)",
       "flag_top_share": 0.7,
-      "recall": 0.694,
-      "precision": 0.352,
-      "f1": 0.467,
+      "recall": 0.7,
+      "precision": 0.219,
+      "f1": 0.333,
       "patients_flagged_per_100": 70,
-      "relapses_caught_per_100": 24.713
+      "relapses_caught_per_100": 15.217
     }
   ],
   "sensitivity_without_hormonal_therapy_auc": {
-    "Baseline (random flagging)": 0.504,
-    "Logistic regression": 0.667,
-    "Random forest": 0.678
+    "Baseline (random flagging)": 0.499,
+    "Logistic regression": 0.486,
+    "Random forest": 0.597
   },
   "top_logistic_coefficients": {
-    "bin__surgery": -0.91,
-    "bin__radiotherapy": -0.85,
-    "bin__hormonal_therapy": -0.8,
-    "cat__breast_subtype_HR+/HER2-": -0.53,
-    "cat__site_group_Head & neck": 0.53,
-    "cat__site_group_CNS": -0.51,
-    "cat__breast_subtype_Unknown": 0.35,
-    "cat__region_Khartoum": -0.32
+    "bin__radiotherapy": -0.65,
+    "bin__adjuvant_chemo": 0.6,
+    "cat__breast_subtype_HR+/HER2-": -0.59,
+    "cat__site_group_Head & neck": 0.56,
+    "cat__breast_subtype_HER2+": 0.52,
+    "cat__site_group_CNS": -0.5,
+    "cat__site_group_Sarcoma": 0.44,
+    "cat__region_Khartoum": -0.41
+  },
+  "cox_cross_validated": {
+    "Cox: site + grade + treatments": {
+      "c_index_mean": 0.629,
+      "c_index_sd": 0.027
+    },
+    "Cox: breast vs other only": {
+      "c_index_mean": 0.593,
+      "c_index_sd": 0.024
+    }
   },
   "tstr": {
-    "auc_train_on_synthetic": 0.753,
-    "auc_train_on_real": 0.707,
+    "auc_train_on_synthetic": 0.533,
+    "auc_train_on_real": 0.466,
     "repeats": 3
   }
 }

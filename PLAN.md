@@ -5,18 +5,29 @@ Framework (from `related files/End_to_End_Data_Analysis_Practice_Activity.pdf`):
 
 ## Business framing (goal → KPI → metric)
 
-Clinic goal: **find patients whose cancer is likely to come back, so limited follow-up
-slots and scans go to them first.**
+**Premise (the whole project):** if someone has had cancer and was treated, will it come back,
+and is each factor linked to that **correlation or causation**? Everything else (prediction,
+synthetic data, posts) serves this question.
+
+Clinic goal: **understand who is likely to see their cancer come back, so follow-up can be planned.**
 
 | Clinic goal | KPI | Supporting metrics | Data we have |
 |---|---|---|---|
-| Reduce / catch relapse early | **Relapse rate** (curative cohort) — now 36% | relapse-free survival at 2/5 yrs (81% / 70%) | `relapse`, `dx_year`, `recurrence_year` |
-| Target follow-up to high-risk patients | **Recall of the relapse model** (share of relapses flagged) | precision, F1, confusion matrix | features + `relapse` |
+| Know how often cancer comes back | **Relapse rate** (at-risk cohort): 22% | relapse-free survival at 2/5/10 yrs (87% / 78% / 48%) | `relapse`, `rfs_years` |
+| Separate correlation from causation | **Verdict per factor** (crude vs adjusted HR, E-value) | hazard ratios, CIs, power | `tables/correlation_vs_causation.csv` |
+| Target follow-up to high-risk patients | **C-index of a time-aware risk model**: 0.63 | recall, precision, F1, confusion matrix | features + `relapse` |
 | Earlier diagnosis | **% metastatic at diagnosis** — now 19% | by region, by site | `metastatic_at_dx`, `region` |
 | Better records | **% breast patients with receptor status documented** — now 32% | % with grade, % with dx year | `er/pr/her2`, `grade` |
 | Palliative capacity | **% referred to palliative care** — now 17% | opioid use, visits to PCF unit | `palliative_referral`, appointments |
 
 KPI = outcome the clinic wants to move. Metric = what helps explain or move it.
+
+## v2 correction (premise review)
+The first version's relapse cohort used a different rule for relapsers and non-relapsers,
+which made treatments look strongly protective (HT OR 0.18) and the model look good (AUC 0.71).
+Fixed: one rule for everyone, survival analysis as the primary method, and an explicit
+correlation-vs-causation verdict per factor. The headline is now honest and weaker:
+cancer type is the only clear link. HT and RT point the way trials do but are not provable here.
 
 ## Where we are vs the 8 stages
 
@@ -49,7 +60,8 @@ importing logic from `src/` (no copy-pasted code):
 Each opens with **the business question** and ends with **"so what?"** for the clinic.
 
 ### Phase 2 — Modeling: predict relapse ✅ done
-- Target `y` = `relapse` (curative cohort, n = 87, 31 events). Classification problem.
+- Target `y` = `relapse` (at-risk cohort, n = 138, 30 events, same rule for everyone) + time `rfs_years`.
+  Primary: cross-validated Cox model (C-index 0.63). Secondary: yes/no classifiers (near chance).
 - Features `X`: site, receptor subtype, grade, surgery, RT, hormonal therapy, neoadjuvant,
   years since dx, region, treated abroad, missed follow-up.
 - **Leakage check:** drop anything that happens *because of* relapse — `recurrence_year`,

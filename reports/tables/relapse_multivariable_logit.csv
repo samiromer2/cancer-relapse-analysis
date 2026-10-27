@@ -1,6 +1,0 @@
-,odds_ratio,ci_low,ci_high,p
-years_since_dx,1.0,0.85,1.17,0.9928
-breast,1.07,0.1,11.85,0.9542
-triple_negative,0.22,0.02,2.61,0.2293
-hormonal_therapy,0.14,0.01,1.37,0.0914
-radiotherapy,0.28,0.09,0.86,0.0266

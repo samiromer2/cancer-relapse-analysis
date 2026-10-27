@@ -1,9 +1,33 @@
-# Cancer Recurrence — Correlation vs Causation (Sudan oncology clinic data)
+# Will the cancer come back? Correlation vs causation on real clinic data
 
-A data project built on a real appointment-booking database from an oncology clinic in Sudan
-(2020–2021). It asks **"Once someone has had cancer and finished treatment, what is associated
-with the cancer coming back, and how much of that can we call cause and effect?"** It also
-generates de-identified **synthetic patients** so the work can be shared and extended.
+**The premise:** if someone has had cancer and was treated, **will the cancer come back?**
+For every factor linked to it coming back, is that link **just a correlation**, or is it
+plausibly **cause and effect**?
+
+Data: a real appointment-booking database from an oncology clinic in Sudan (2020–2021),
+de-identified. 335 patients; the clinical facts come from free-text doctors' notes.
+
+## The answer in one screen
+
+| Question | Answer from this data |
+|---|---|
+| How many treated patients saw their cancer come back? | **30 of 138 (22%)** at-risk patients |
+| How likely is it to stay away? | Relapse-free: **87% at 2 years, 78% at 5 years, 48% at 10 years** (Kaplan–Meier) |
+| What is clearly linked to it coming back? | **Cancer type.** Breast cancer came back less than other cancers (hazard ratio 0.33, 95% CI 0.16–0.70). This is a **risk marker**, not a cause you can change. |
+| Do treatments *cause* fewer relapses? | Hormonal therapy (HR 0.36) and radiotherapy (HR 0.55) point to fewer relapses, the **same direction as clinical trials**, but their confidence intervals include "no effect". **This data cannot separate them from chance or confounding.** |
+| Everything else (surgery, grade, triple-negative, region, treated abroad…) | **No clear link** in either direction (too few patients to tell) |
+| Can we predict who will relapse? | **Only weakly.** Cross-validated time-aware model: C-index 0.63 (0.5 = coin flip) |
+| Getting a *new* (second) cancer? | Only 4 patients mention one, too few to analyse |
+| Why can't it prove causation? | 30 relapses (detecting a halving of risk needs ~66), **no stage, no age, no date of death**, and only survivors attending in 2020–21 are in the data |
+
+> **Correction (v2).** An earlier version defined the at-risk group differently for patients with
+> and without relapse (non-relapsers had to have "curative" treatment detected; relapsers did not).
+> Every untreated patient in that group was therefore a relapse, which made surgery,
+> radiotherapy and hormonal therapy look strongly protective (e.g. hormonal therapy OR 0.18) and
+> gave a prediction model a false AUC of 0.71. With one rule for everyone, those effects shrink to
+> what's shown above. The bug and its fix are in `src/extract_features.py`.
+
+These are associations from one clinic, **not medical advice**.
 
 ```
 bookingtreat.sql  ──►  clean_anonymize.py  ──►  extract_features.py  ──►  analysis.py  ──►  reports/
@@ -77,137 +101,112 @@ synthetic data are published.
 - **Course & access:** diagnosis year, years since diagnosis, missed follow-up / delayed care
 - **Booking behaviour:** number of visits, units seen, moved from survivorship clinic → chemo/palliative
 - **Outcomes**
-  - `relapse` — **"Did the cancer come back?"** Defined only for patients who had
-    curative-intent treatment, were **not** metastatic at diagnosis, and either relapsed or are ≥1 year out.
-    → **87 patients, 31 relapsed (36%)**.
+  - `relapse` + `rfs_years`: **"Did the cancer come back, and when?"** Defined with **one rule for
+    everyone**: malignant, **not** metastatic at diagnosis, received any cancer treatment, diagnosed
+    ≥ 1 year before the note → **138 at-risk patients, 30 relapsed (22%)**. Time = years from diagnosis
+    to relapse (or to the note, if no relapse).
   - `progression_if_metastatic` — for the 64 patients who were already stage-IV at diagnosis (17 progressed).
 
 All rules are plain regexes in `src/extract_features.py`, so a clinician can audit and fix them.
 
-## 4. Findings
-
-### Who is in this clinic (n = 335)
+## 4. Context: who is in this clinic (n = 335)
 - **54% breast cancer**, then upper-GI / liver (9%), head & neck (7%), colorectal (6%), gynaecological (6%).
 - Patients come from all over Sudan: only 25% from Khartoum, and 18% from Darfur.
 - **32% have documented metastases**, and 19% were already metastatic at diagnosis (late presentation).
+  Those patients are *excluded* from the "come back" question, since their cancer never went away.
 - Receptor status is stated for only **58 of 182 breast patients**. That is the single biggest data gap.
 
 ![sites](reports/figures/01_site_groups.png)
 
-### What moves together (correlation, `07_correlation_heatmap.png`)
-Strongest pairs (phi): breast–female 0.85 · bone mets–zoledronic acid 0.59 · breast–hormonal therapy 0.55 ·
-recurrence/progression–metastatic 0.47 · hormonal therapy–≥5 yrs since diagnosis 0.43 ·
-breast–palliative referral −0.37. Most of these are **treatment following diagnosis**
-(bone mets → zoledronic acid), not risk factors.
-
-### "Will it come back?" — relapse after curative treatment (n = 87, 31 events)
-
-| Factor | Relapse with | Relapse without | Odds ratio (95% CI) | FDR p |
-|---|---|---|---|---|
-| On hormonal therapy | 13/58 (22%) | 18/29 (62%) | **0.18** (0.07–0.48) | 0.009 |
-| Breast (vs other sites) | 19/68 (28%) | 12/19 (63%) | **0.24** (0.08–0.67) | 0.03 |
-| Had radiotherapy | 15/59 (25%) | 16/28 (57%) | **0.26** (0.10–0.67) | 0.03 |
-| Had surgery | 10/43 (23%) | 21/44 (48%) | 0.34 (0.14–0.85) | 0.08 |
-| Hormone-receptor positive | 4/20 (20%) | 27/67 (40%) | 0.40 (0.13–1.27) | 0.25 |
-| Triple-negative breast | 3/9 (33%) | 28/78 (36%) | 0.95 (0.24–3.79) | 1.0 |
-
-![forest](reports/figures/08_relapse_forest_plot.png)
-
-**Relapse-free survival** (Kaplan–Meier, from diagnosis): **81% at 2 yrs, 70% at 5 yrs, 57% at 8 yrs**.
-Triple-negative vs other breast cancers: no detectable difference (p = 0.60, but only 9 TNBC patients).
+## 5. Will it come back? How often and how fast
 
 ![km](reports/figures/09_relapse_free_survival.png)
 
-Multivariable logistic model (years since diagnosis, breast, TNBC, hormonal therapy, radiotherapy):
-radiotherapy OR 0.28 (0.09–0.86) stays significant. Hormonal therapy OR 0.14 (0.01–1.37) loses
-significance once site and radiotherapy are in the model.
+- 138 at-risk patients, median follow-up 4 years, 30 relapses.
+- Relapse-free: **87% at 2 yrs, 78% at 5 yrs, 48% at 10 yrs** (few patients are followed past 10 years,
+  so the tail is uncertain).
+- Breast cancers come back later and less often than other cancers (log-rank p = 0.002).
+- A **survival (time-to-event) analysis** is used because follow-up ranges from 1 to 17 years.
+  "No relapse yet" after 1 year is not the same as "no relapse" after 10.
 
-## 5. Correlation ≠ causation — what this data can and cannot say
+## 6. Correlation or causation? Factor by factor
+
+For each factor: the **crude** link (correlation), the link **adjusted** for measured confounders
+(Cox model), the **E-value** (how strong an unmeasured confounder such as stage would need to be to
+explain the adjusted link away), and outside evidence. Full table: `reports/tables/correlation_vs_causation.csv`.
+
+![forest](reports/figures/08_relapse_forest_plot.png)
+
+| Factor | Relapse with / without | Crude HR | Adjusted HR (for) | E-value | Verdict |
+|---|---|---|---|---|---|
+| Breast cancer (vs other) | 19% / 27% | 0.33 (0.16–0.70) | — | 3.65 | **Risk marker**: real link, not modifiable |
+| Hormonal therapy *(breast)* | 17% / 24% | 0.38 (0.14–1.01) | 0.36 (0.12–1.04) *(HR status, surgery, RT)* | 3.45 | Points to fewer relapses, matching trials; **not provable here** |
+| Radiotherapy | 18% / 27% | 0.54 (0.27–1.11) | 0.55 (0.26–1.16) *(site, surgery)* | 2.40 | Points to fewer relapses, matching trials; **not provable here** |
+| Surgery | 23% / 21% | 0.78 (0.37–1.65) | 0.78 (0.36–1.67) *(site)* | 1.66 | No clear link |
+| Triple-negative *(breast)* | 19% / 19% | 1.24 (0.36–4.21) | 1.30 (0.33–5.12) *(grade)* | 1.69 | No clear link. Trials say TNBC relapses more; only 16 TNBC patients here |
+| Grade 3 | 20% / 22% | 0.68 (0.24–1.90) | 0.91 (0.31–2.66) *(site)* | 1.33 | No clear link |
+| Treated abroad / Khartoum / missed follow-up | — | ≈ 0.5–1.3, all CIs cross 1 | — | — | No clear link |
+
+**How to read the verdict.**
+- A **correlation** is any link in the crude column.
+- For a **cause**, we need the link to survive adjustment, to come before the outcome in time,
+  to be strong enough that hidden confounders can't explain it, and to agree with outside evidence.
+- Hormonal therapy and radiotherapy pass "time order" and "outside evidence" but fail "survives
+  chance": their intervals include 1. To exclude chance, an unmeasured confounder like **stage**
+  would also have to be ruled out. The E-value says it would need to be linked to both treatment
+  and relapse by a factor of about 3.5 (hormonal therapy) or 2.4 (radiotherapy) to explain the
+  point estimate away. That is plausible for stage, so we can't rule it out.
 
 ```mermaid
 graph LR
-  HR[Tumour biology<br/>HR+ / breast] --> HT[Hormonal therapy]
-  HR --> R[Relapse]
-  HT --> R
-  Stage[Stage at diagnosis<br/>NOT RECORDED] --> Tx[Surgery / RT offered]
-  Stage --> R
+  Bio[Tumour biology<br/>site, HR status, grade] --> Tx[Treatment chosen<br/>surgery / RT / HT]
+  Bio --> R[Cancer comes back]
   Tx --> R
+  Stage[Stage at diagnosis<br/>NOT RECORDED] --> Tx
+  Stage --> R
   Access[Region / cost / delay] --> Stage
   Access --> Tx
-  R -. reverse causation .-> HT2[HT stopped,<br/>switched to chemo]
-  Alive[Must be alive & attending<br/>to be in the database] -. selection bias .-> R
+  R -. reverse causation .-> Tx2[HT stopped,<br/>switched to chemo]
+  Alive[Alive & attending in 2020-21<br/>to be in the data] -. selection bias .-> R
 ```
 
-**Worked example: does hormonal therapy *cause* less relapse?** (`tables/confounding_hormonal_therapy.csv`)
+**Biases this data cannot remove**
+1. **Confounding by stage.** Stage isn't recorded, and it drives both which treatment is offered and relapse.
+2. **Reverse causation.** After a relapse, hormonal tablets are often stopped and chemo started,
+   so the note's treatment list partly reflects the relapse.
+3. **Survivor / selection bias.** Only patients alive and attending in 2020–21 are in the
+   database. Patients who relapsed and died earlier are missing, so 22% *understates* relapse.
+4. **Too few events.** Detecting a halving of risk (HR 0.5) with 80% power needs ~66 relapses;
+   HR 0.7 needs ~247. We have 30.
 
-| Analysis | OR for relapse on hormonal therapy |
-|---|---|
-| Crude | 0.18 (0.07–0.48) |
-| Stratified by site & receptor status (Mantel–Haenszel) | **0.28 (0.09–0.88)** |
+## 7. Predicting relapse: model & evaluation (`src/model.py`)
 
-Part of the apparent effect (about a quarter, on the log-odds scale) was **confounding**: hormonal therapy is only given to breast and
-hormone-positive cancers, which relapse less anyway. Three more biases this data cannot remove:
-1. **Confounding by stage.** Surgery and radiotherapy are offered to operable, earlier-stage disease.
-   Stage isn't recorded, so "surgery → less relapse" partly means "earlier stage → less relapse".
-2. **Reverse causation.** When cancer relapses, hormonal tablets are often *stopped* and chemo
-   started, so notes for relapsed patients mention HT less.
-3. **Selection / survivor bias.** Only patients alive and attending in 2020–21 are in the database.
-   Long-term survivors come for annual follow-up, and patients who died earlier are invisible.
+**Clinic question:** can we rank treated patients by risk so follow-up goes to the highest-risk first?
 
-**What is reasonable to conclude:** the direction of the hormonal-therapy and radiotherapy
-associations **agrees with randomised-trial evidence** (endocrine therapy and adjuvant RT reduce
-recurrence), so they are *consistent with* a causal effect. This dataset alone cannot prove it.
-The non-finding for triple-negative breast cancer (known to relapse earlier) is most likely
-**too few documented receptor results**, not true absence.
+- Target: `relapse` / `rfs_years` (138 patients, 30 relapses). Features: only facts known before
+  relapse. Metastasis flags, palliative referral, opioids, zoledronic acid, 2nd-line chemo and visit
+  counts are excluded as **leakage**.
+- Validation: 5-fold stratified cross-validation × 20 repeats. Runs on the public k-anonymous file.
 
-## 6. Predicting relapse — model & evaluation (`src/model.py`)
+| Model | Metric | Result | Random flagging |
+|---|---|---|---|
+| **Cox model** (site, grade, treatments), time-aware | C-index | **0.63 ± 0.03** | 0.50 |
+| Cox model, breast vs other only | C-index | 0.59 ± 0.02 | 0.50 |
+| Random forest (relapse yes/no) | ROC-AUC | 0.59 | 0.49 |
+| Logistic regression (relapse yes/no) | ROC-AUC | 0.47 | 0.49 |
 
-**Clinic question:** with limited follow-up slots and scans, can we flag the curatively treated
-patients most likely to relapse so they are seen first?
-
-- Target: `relapse` (87 patients, 31 relapses). Classification problem.
-- Features: only information known **before** relapse: site, breast subtype, grade, surgery,
-  radiotherapy, hormonal therapy, neo/adjuvant chemo, anti-HER2, years since diagnosis, region,
-  treated abroad, missed follow-up.
-- **Leakage removed on purpose:** metastasis flags, palliative referral, opioids, zoledronic acid,
-  2nd-line chemo and visit counts are all *consequences* of relapse.
-- Validation: 5-fold stratified cross-validation × 20 repeats. n is too small for one train/test split.
-- Runs on the **public k-anonymous file**, so it is reproducible from this repo.
-
-| Model | ROC-AUC | Accuracy | Precision | Recall | F1 |
-|---|---|---|---|---|---|
-| Random flagging (baseline) | 0.48 | 0.53 | 0.34 | 0.34 | 0.34 |
-| Logistic regression | 0.69 | 0.66 | 0.52 | 0.52 | 0.52 |
-| **Random forest** | **0.71** | **0.69** | **0.57** | **0.57** | **0.57** |
-
-(Threshold: flag the top 36% highest-risk patients, matching the relapse rate, so precision = recall here.)
+Flagging the top 22% riskiest (= relapse rate), the random forest catches 38% of relapses
+(precision 0.38), vs 19% for random flagging. Full operating points: `tables/model_operating_points.csv`.
 
 ![metrics](reports/figures/11_model_metrics.png)
 ![confusion](reports/figures/12_confusion_matrices.png)
 
-**The clinic's real decision is how many patients to flag** (`tables/model_operating_points.csv`):
+**Verdict:** with this data, relapse is **only weakly predictable**, and most of the signal is
+cancer type. The yes/no models are close to chance, partly because they can't tell "not relapsed"
+from "not followed long enough". That is why the time-aware Cox model is the primary result.
+**Not fit for clinical use.** This is mainly a data problem: stage, age and receptor status are missing.
 
-| Flag the top… | Relapses caught (recall), random forest | Relapses caught, random flagging | Precision |
-|---|---|---|---|
-| 20% | 38% | 20% | 0.65 |
-| 36% | 57% | 34% | 0.57 |
-| 50% | **73%** | 48% | 0.51 |
-| 70% | 83% | 69% | 0.42 |
-
-A missed relapse (false negative) costs more than an extra scan (false positive), so **recall
-matters more**. Flagging the top half catches about three in four relapses, versus about half with random flagging.
-
-**Honest caveats**
-- AUC ≈ 0.7 is *modest*. It is useful for prioritising, not for telling a patient they're safe.
-- Dropping hormonal therapy (possible reverse causation) lowers AUC only slightly (0.68).
-- **Train on synthetic, test on real** (synthesiser refit inside each fold): AUC 0.75 vs 0.71
-  when training on real data. The synthetic data carries the signal, but with 87 patients
-  and 3 repeats, read this as "no loss" rather than "better".
-- Needs external validation on a different clinic or time period before any clinical use.
-
-![coefficients](reports/figures/13_model_coefficients.png)
-
-## 7. Synthetic data (`data/synthetic/synthetic_patients.csv`)
+## 8. Synthetic data (`data/synthetic/synthetic_patients.csv`)
 
 `synthesize.py` fits a **Gaussian copula** to 32 structured factors, applies clinical logic
 (site↔sex, receptor fields only for breast, eligibility), then draws the **relapse outcome from a
@@ -217,26 +216,25 @@ Free text is *not* synthesised.
 | Check | Real | Synthetic (n = 5,000) |
 |---|---|---|
 | Mean marginal distance (TVD) | — | 0.055 |
-| Mean \|correlation difference\| | — | 0.095 |
-| Relapse rate | 35.6% | 35.4% |
-| OR hormonal therapy / radiotherapy / breast | 0.18 / 0.26 / 0.24 | 0.20 / 0.32 / 0.32 |
+| Mean \|correlation difference\| | — | 0.092 |
+| Relapse rate (at-risk cohort) | 21.7% | 21.6% |
+| OR hormonal therapy / radiotherapy / breast | 0.69 / 0.59 / 0.63 | 0.66 / 0.63 / 0.59 |
 | Exact copies of real patients | — | **0** |
-| Synthetic rows closer than the 5th-pct real↔real distance | — | 0.6% |
+| Synthetic rows closer than the 5th-pct real↔real distance | — | 0.3% |
 
-Known limitations: the synthetic "metastatic" share runs high (40% vs 32%) and per-site metastasis
-flags run low. With n = 335, the generator can only reproduce what the real data supports.
-**Never use synthetic data to make clinical claims.** Use it to build and test pipelines,
-dashboards and models.
+Known limitations: the synthetic "metastatic" share runs high (41% vs 32%). Training on synthetic data and
+testing on real gives AUC 0.53, i.e. the synthetic data carries the same (weak) signal as the real data,
+no more. **Never use synthetic data to make clinical claims.**
 
-## 8. Recommendation (draft)
-1. **Prioritise follow-up** for curatively treated patients the model ranks in the top half,
-   especially non-breast cancers and patients who didn't receive surgery, radiotherapy or hormonal therapy.
-   This catches about 73% of relapses while seeing half the patients.
-2. **Fix the records first:** add structured fields for **stage, age, ER/PR/HER2 and date of death**.
-   Receptor status is missing for 68% of breast patients, and stage is missing for everyone.
-   This is the cheapest way to make every future analysis better.
-3. Treat all findings as **associations**. Re-run the model as better data accumulates, and
-   validate it on new patients before using it in care.
+## 9. Recommendation
+1. **To the clinic: record the facts that make this question answerable.** Add structured fields for
+   **stage, age, ER/PR/HER2, date of relapse and date of death**. Receptor status is missing for 68% of
+   breast patients, and stage and age are missing for everyone.
+2. **Use cancer type for follow-up planning.** Non-breast cancers came back sooner and more often.
+   That's the one link this data supports.
+3. **Don't read the treatment results as proof.** Hormonal therapy and radiotherapy point the same way as
+   clinical trials, so there is no reason to doubt them. But this dataset cannot confirm them.
+4. **Re-run when ~66+ relapses are recorded** with stage and age, and validate any risk model on new patients.
 
 Roadmap and status: see [PLAN.md](PLAN.md).
 
@@ -245,8 +243,8 @@ Roadmap and status: see [PLAN.md](PLAN.md).
 src/parse_sql.py          read the MySQL dump without a database server
 src/clean_anonymize.py    de-identify, merge duplicates, generalise geography & dates
 src/extract_features.py   clinical-note NLP → 60 structured factors + outcomes
-src/analysis.py           profile, correlations, odds ratios, KM, confounding demo
-src/model.py              relapse prediction: logistic / random forest, repeated CV, TSTR
+src/analysis.py           the premise: KM, crude vs adjusted Cox, E-values, verdict per factor
+src/model.py              relapse prediction: Cox (C-index), logistic / random forest, repeated CV, TSTR
 src/synthesize.py         Gaussian-copula + outcome-model synthetic generator, with validation
 src/export_public.py      k-anonymous public release of the feature table
 scripts/privacy_check.py  pre-commit guard against leaking private data

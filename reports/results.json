@@ -97,244 +97,270 @@
       "phi": 0.35
     }
   ],
-  "relapse": {
-    "eligible": 87,
-    "relapsed": 31,
-    "rate": 0.356,
-    "univariate": [
-      {
-        "factor": "Triple-negative breast",
-        "n_with": 9,
-        "relapse_with": "3/9 (33%)",
-        "relapse_without": "28/78 (36%)",
-        "odds_ratio": 0.95,
-        "ci_low": 0.24,
-        "ci_high": 3.79,
-        "p_fisher": 1.0,
-        "p_fdr": 1.0
-      },
-      {
-        "factor": "HER2-positive breast",
-        "n_with": 9,
-        "relapse_with": "3/9 (33%)",
-        "relapse_without": "28/78 (36%)",
-        "odds_ratio": 0.95,
-        "ci_low": 0.24,
-        "ci_high": 3.79,
-        "p_fisher": 1.0,
-        "p_fdr": 1.0
-      },
-      {
-        "factor": "Treated abroad (Egypt/India/Jordan)",
-        "n_with": 9,
-        "relapse_with": "3/9 (33%)",
-        "relapse_without": "28/78 (36%)",
-        "odds_ratio": 0.95,
-        "ci_low": 0.24,
-        "ci_high": 3.79,
-        "p_fisher": 1.0,
-        "p_fdr": 1.0
-      },
-      {
-        "factor": "Grade 3 tumour",
-        "n_with": 13,
-        "relapse_with": "4/13 (31%)",
-        "relapse_without": "27/74 (36%)",
-        "odds_ratio": 0.82,
-        "ci_low": 0.24,
-        "ci_high": 2.76,
-        "p_fisher": 0.7641,
-        "p_fdr": 1.0
-      },
-      {
-        "factor": "Missed follow-up / delayed care",
-        "n_with": 4,
-        "relapse_with": "1/4 (25%)",
-        "relapse_without": "30/83 (36%)",
-        "odds_ratio": 0.75,
-        "ci_low": 0.11,
-        "ci_high": 5.36,
-        "p_fisher": 1.0,
-        "p_fdr": 1.0
-      },
-      {
-        "factor": "Lives in Khartoum",
-        "n_with": 26,
-        "relapse_with": "8/26 (31%)",
-        "relapse_without": "23/61 (38%)",
-        "odds_ratio": 0.75,
-        "ci_low": 0.29,
-        "ci_high": 1.97,
-        "p_fisher": 0.6287,
-        "p_fdr": 1.0
-      },
-      {
-        "factor": "Neoadjuvant chemo (big tumour at start)",
-        "n_with": 13,
-        "relapse_with": "3/13 (23%)",
-        "relapse_without": "28/74 (38%)",
-        "odds_ratio": 0.54,
-        "ci_low": 0.15,
-        "ci_high": 1.99,
-        "p_fisher": 0.3643,
-        "p_fdr": 0.6766
-      },
-      {
-        "factor": "Hormone-receptor positive",
-        "n_with": 20,
-        "relapse_with": "4/20 (20%)",
-        "relapse_without": "27/67 (40%)",
-        "odds_ratio": 0.4,
-        "ci_low": 0.13,
-        "ci_high": 1.27,
-        "p_fisher": 0.1163,
-        "p_fdr": 0.252
-      },
-      {
-        "factor": "≥5 years since diagnosis",
-        "n_with": 52,
-        "relapse_with": "14/52 (27%)",
-        "relapse_without": "17/35 (49%)",
-        "odds_ratio": 0.4,
-        "ci_low": 0.16,
-        "ci_high": 0.97,
-        "p_fisher": 0.0439,
-        "p_fdr": 0.1141
-      },
-      {
-        "factor": "Had surgery",
-        "n_with": 43,
-        "relapse_with": "10/43 (23%)",
-        "relapse_without": "21/44 (48%)",
-        "odds_ratio": 0.34,
-        "ci_low": 0.14,
-        "ci_high": 0.85,
-        "p_fisher": 0.0249,
-        "p_fdr": 0.0809
-      },
-      {
-        "factor": "Had radiotherapy",
-        "n_with": 59,
-        "relapse_with": "15/59 (25%)",
-        "relapse_without": "16/28 (57%)",
-        "odds_ratio": 0.26,
-        "ci_low": 0.1,
-        "ci_high": 0.67,
-        "p_fisher": 0.0076,
-        "p_fdr": 0.0329
-      },
-      {
-        "factor": "Breast cancer (vs other sites)",
-        "n_with": 68,
-        "relapse_with": "19/68 (28%)",
-        "relapse_without": "12/19 (63%)",
-        "odds_ratio": 0.24,
-        "ci_low": 0.08,
-        "ci_high": 0.67,
-        "p_fisher": 0.0068,
-        "p_fdr": 0.0329
-      },
-      {
-        "factor": "On hormonal therapy",
-        "n_with": 58,
-        "relapse_with": "13/58 (22%)",
-        "relapse_without": "18/29 (62%)",
-        "odds_ratio": 0.18,
-        "ci_low": 0.07,
-        "ci_high": 0.48,
-        "p_fisher": 0.0007,
-        "p_fdr": 0.0091
-      }
-    ],
-    "multivariable": {
-      "years_since_dx": {
-        "odds_ratio": 1.0,
-        "ci_low": 0.85,
-        "ci_high": 1.17,
-        "p": 0.9928
-      },
-      "breast": {
-        "odds_ratio": 1.07,
-        "ci_low": 0.1,
-        "ci_high": 11.85,
-        "p": 0.9542
-      },
-      "triple_negative": {
-        "odds_ratio": 0.22,
-        "ci_low": 0.02,
-        "ci_high": 2.61,
-        "p": 0.2293
-      },
-      "hormonal_therapy": {
-        "odds_ratio": 0.14,
-        "ci_low": 0.01,
-        "ci_high": 1.37,
-        "p": 0.0914
-      },
-      "radiotherapy": {
-        "odds_ratio": 0.28,
-        "ci_low": 0.09,
-        "ci_high": 0.86,
-        "p": 0.0266
-      }
+  "premise": {
+    "at_risk_cohort": 138,
+    "relapsed": 30,
+    "crude_rate": 0.217,
+    "relapse_free": {
+      "2y": 0.87,
+      "5y": 0.78,
+      "10y": 0.48
+    },
+    "median_followup_years": 4.0,
+    "breast_vs_other_logrank_p": 0.002,
+    "second_primary_cancers_mentioned_all_patients": 4,
+    "relapses_needed_to_detect_HR_0.5": 66,
+    "relapses_needed_to_detect_HR_0.7": 247,
+    "cohort_rule": "malignant, not metastatic at diagnosis, received treatment, diagnosed >= 1 year before note"
+  },
+  "correlation_vs_causation": [
+    {
+      "factor": "Breast cancer (vs other sites)",
+      "population": "all sites",
+      "n": 138,
+      "relapse_with": "18/94 (19%)",
+      "relapse_without": "12/44 (27%)",
+      "crude_HR": 0.33,
+      "crude_CI": "0.16-0.70",
+      "crude_p": 0.004,
+      "adjusted_for": "-",
+      "adjusted_HR": 0.33,
+      "adjusted_CI": "0.16-0.70",
+      "adjusted_p": 0.004,
+      "E_value": 3.65,
+      "E_value_CI": 1.88,
+      "outside_evidence": "Many breast cancers have good long-term control; varies by subtype",
+      "verdict": "Risk marker: real association, but not something you can change",
+      "crude_p_fdr": 0.044
+    },
+    {
+      "factor": "Hormone-receptor positive (breast)",
+      "population": "breast only",
+      "n": 94,
+      "relapse_with": "4/24 (17%)",
+      "relapse_without": "14/70 (20%)",
+      "crude_HR": 0.98,
+      "crude_CI": "0.33-2.92",
+      "crude_p": 0.972,
+      "adjusted_for": "grade3",
+      "adjusted_HR": 0.98,
+      "adjusted_CI": "0.32-3.00",
+      "adjusted_p": 0.974,
+      "E_value": 1.13,
+      "E_value_CI": 1.0,
+      "outside_evidence": "HR+ relapses less early on, but can relapse late",
+      "verdict": "No clear link (too few patients to tell)",
+      "crude_p_fdr": 0.972
+    },
+    {
+      "factor": "Triple-negative (breast)",
+      "population": "breast only",
+      "n": 94,
+      "relapse_with": "3/16 (19%)",
+      "relapse_without": "15/78 (19%)",
+      "crude_HR": 1.24,
+      "crude_CI": "0.36-4.21",
+      "crude_p": 0.732,
+      "adjusted_for": "grade3",
+      "adjusted_HR": 1.3,
+      "adjusted_CI": "0.33-5.12",
+      "adjusted_p": 0.708,
+      "E_value": 1.69,
+      "E_value_CI": 1.0,
+      "outside_evidence": "Well established: relapses more often and earlier",
+      "verdict": "No clear link (too few patients to tell)",
+      "crude_p_fdr": 0.895
+    },
+    {
+      "factor": "Grade 3 tumour",
+      "population": "all sites",
+      "n": 138,
+      "relapse_with": "4/20 (20%)",
+      "relapse_without": "26/118 (22%)",
+      "crude_HR": 0.68,
+      "crude_CI": "0.24-1.90",
+      "crude_p": 0.46,
+      "adjusted_for": "breast",
+      "adjusted_HR": 0.91,
+      "adjusted_CI": "0.31-2.66",
+      "adjusted_p": 0.865,
+      "E_value": 1.33,
+      "E_value_CI": 1.0,
+      "outside_evidence": "Well established: higher grade, higher risk",
+      "verdict": "No clear link (too few patients to tell)",
+      "crude_p_fdr": 0.895
+    },
+    {
+      "factor": "Surgery",
+      "population": "all sites",
+      "n": 138,
+      "relapse_with": "10/43 (23%)",
+      "relapse_without": "20/95 (21%)",
+      "crude_HR": 0.78,
+      "crude_CI": "0.37-1.65",
+      "crude_p": 0.513,
+      "adjusted_for": "breast",
+      "adjusted_HR": 0.78,
+      "adjusted_CI": "0.36-1.67",
+      "adjusted_p": 0.524,
+      "E_value": 1.66,
+      "E_value_CI": 1.0,
+      "outside_evidence": "Yes, for operable disease",
+      "verdict": "No clear link (too few patients to tell)",
+      "crude_p_fdr": 0.895
+    },
+    {
+      "factor": "Radiotherapy",
+      "population": "all sites",
+      "n": 138,
+      "relapse_with": "15/83 (18%)",
+      "relapse_without": "15/55 (27%)",
+      "crude_HR": 0.54,
+      "crude_CI": "0.27-1.11",
+      "crude_p": 0.094,
+      "adjusted_for": "breast, surgery",
+      "adjusted_HR": 0.55,
+      "adjusted_CI": "0.26-1.16",
+      "adjusted_p": 0.117,
+      "E_value": 2.4,
+      "E_value_CI": 1.0,
+      "outside_evidence": "Yes: trials show adjuvant RT cuts local recurrence",
+      "verdict": "No clear link (too few patients to tell)",
+      "crude_p_fdr": 0.345
+    },
+    {
+      "factor": "Hormonal therapy",
+      "population": "breast only",
+      "n": 94,
+      "relapse_with": "12/69 (17%)",
+      "relapse_without": "6/25 (24%)",
+      "crude_HR": 0.38,
+      "crude_CI": "0.14-1.01",
+      "crude_p": 0.052,
+      "adjusted_for": "hr_pos, surgery, radiotherapy",
+      "adjusted_HR": 0.36,
+      "adjusted_CI": "0.12-1.04",
+      "adjusted_p": 0.059,
+      "E_value": 3.45,
+      "E_value_CI": 1.0,
+      "outside_evidence": "Yes: trials show ~5 yrs of tamoxifen cuts recurrence in HR+ breast cancer",
+      "verdict": "No clear link (too few patients to tell)",
+      "crude_p_fdr": 0.286
+    },
+    {
+      "factor": "Neoadjuvant chemo (large tumour at start)",
+      "population": "all sites",
+      "n": 138,
+      "relapse_with": "3/13 (23%)",
+      "relapse_without": "27/125 (22%)",
+      "crude_HR": 0.88,
+      "crude_CI": "0.27-2.82",
+      "crude_p": 0.825,
+      "adjusted_for": "breast",
+      "adjusted_HR": 1.18,
+      "adjusted_CI": "0.35-3.94",
+      "adjusted_p": 0.791,
+      "E_value": 1.49,
+      "E_value_CI": 1.0,
+      "outside_evidence": "Marks larger / locally advanced tumours",
+      "verdict": "No clear link (too few patients to tell)",
+      "crude_p_fdr": 0.908
+    },
+    {
+      "factor": "Treated abroad",
+      "population": "all sites",
+      "n": 138,
+      "relapse_with": "3/10 (30%)",
+      "relapse_without": "27/128 (21%)",
+      "crude_HR": 1.31,
+      "crude_CI": "0.40-4.26",
+      "crude_p": 0.656,
+      "adjusted_for": "breast",
+      "adjusted_HR": 1.38,
+      "adjusted_CI": "0.42-4.48",
+      "adjusted_p": 0.597,
+      "E_value": 1.8,
+      "E_value_CI": 1.0,
+      "outside_evidence": "No direct evidence",
+      "verdict": "No clear link (too few patients to tell)",
+      "crude_p_fdr": 0.895
+    },
+    {
+      "factor": "Missed follow-up / delayed care",
+      "population": "all sites",
+      "n": 138,
+      "relapse_with": "1/8 (12%)",
+      "relapse_without": "29/130 (22%)",
+      "crude_HR": 0.51,
+      "crude_CI": "0.08-3.36",
+      "crude_p": 0.483,
+      "adjusted_for": "breast",
+      "adjusted_HR": 0.35,
+      "adjusted_CI": "0.05-2.37",
+      "adjusted_p": 0.28,
+      "E_value": 3.55,
+      "E_value_CI": 1.0,
+      "outside_evidence": "Delay worsens outcomes in general",
+      "verdict": "No clear link (too few patients to tell)",
+      "crude_p_fdr": 0.895
+    },
+    {
+      "factor": "Lives in Khartoum (capital)",
+      "population": "all sites",
+      "n": 138,
+      "relapse_with": "8/35 (23%)",
+      "relapse_without": "22/103 (21%)",
+      "crude_HR": 0.81,
+      "crude_CI": "0.37-1.78",
+      "crude_p": 0.598,
+      "adjusted_for": "breast",
+      "adjusted_HR": 1.02,
+      "adjusted_CI": "0.45-2.32",
+      "adjusted_p": 0.958,
+      "E_value": 1.14,
+      "E_value_CI": 1.0,
+      "outside_evidence": "Access to care, no direct evidence",
+      "verdict": "No clear link (too few patients to tell)",
+      "crude_p_fdr": 0.895
     }
-  },
-  "km": {
-    "n": 86,
-    "relapse_free_at_years": {
-      "2": 0.81,
-      "5": 0.7,
-      "8": 0.57
+  ],
+  "multivariable_cox": {
+    "concordance": 0.716,
+    "breast": {
+      "HR": 0.56,
+      "ci_low": 0.2,
+      "ci_high": 1.569,
+      "p": 0.27
     },
-    "breast_tn_logrank_p": 0.6023621174927656
-  },
-  "confounding_hormonal_therapy": {
-    "Crude (all)": {
-      "OR": 0.18,
-      "ci": [
-        0.07,
-        0.48
-      ],
-      "n": 87,
-      "on_HT": 58
+    "grade3": {
+      "HR": 0.833,
+      "ci_low": 0.271,
+      "ci_high": 2.557,
+      "p": 0.749
     },
-    "Breast, HR+": {
-      "OR": 0.07,
-      "ci": [
-        0.0,
-        2.12
-      ],
-      "n": 20,
-      "on_HT": 19
+    "surgery": {
+      "HR": 0.908,
+      "ci_low": 0.41,
+      "ci_high": 2.008,
+      "p": 0.811
     },
-    "Breast, HR- or unknown": {
-      "OR": 0.22,
-      "ci": [
-        0.05,
-        0.91
-      ],
-      "n": 48,
-      "on_HT": 38
+    "radiotherapy": {
+      "HR": 0.535,
+      "ci_low": 0.253,
+      "ci_high": 1.134,
+      "p": 0.103
     },
-    "Other sites": {
-      "OR": 1.96,
-      "ci": [
-        0.07,
-        54.68
-      ],
-      "n": 19,
-      "on_HT": 1
+    "hormonal_therapy": {
+      "HR": 0.485,
+      "ci_low": 0.181,
+      "ci_high": 1.301,
+      "p": 0.151
     },
-    "Mantel-Haenszel adjusted": {
-      "OR": 0.28,
-      "ci": [
-        0.09,
-        0.88
-      ]
+    "neoadjuvant_chemo": {
+      "HR": 1.477,
+      "ci_low": 0.422,
+      "ci_high": 5.165,
+      "p": 0.542
     }
-  },
-  "booking_signal": {
-    "escalated_from_HT_patients": 11,
-    "relapse_rate_if_escalated": 0.64
   }
 }
