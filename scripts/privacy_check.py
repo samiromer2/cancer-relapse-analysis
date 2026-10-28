@@ -15,7 +15,10 @@ PATTERNS = {
     "Arabic text (possible name)": re.compile(r"[؀-ۿ]{3,}"),
 }
 TEXT_EXT = (".csv", ".json", ".md", ".txt", ".py", ".ipynb")
-ALLOW_ARABIC = {"README.md", "src/clean_anonymize.py", "scripts/privacy_check.py"}  # place-name rules, docs
+# files allowed to contain Arabic: place-name rules, docs, and the wrangling notebook's made-up
+# residence examples (generic city names, no personal data)
+ALLOW_ARABIC = {"README.md", "src/clean_anonymize.py", "scripts/privacy_check.py", "notebooks/02_wrangling.ipynb",
+                "scripts/build_notebooks.py"}
 
 problems = []
 for f in staged:

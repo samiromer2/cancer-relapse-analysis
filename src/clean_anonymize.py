@@ -199,12 +199,48 @@ def main():
     out_p = out_p.sort_values("patient_id").reset_index(drop=True)
 
     audit(out_p)
+    write_quality_report(tables, test_rows, p, out_p, appts, dropped)
     OUT.mkdir(parents=True, exist_ok=True)
     out_p.to_csv(OUT / "patients_clean.csv", index=False)
     appts.to_csv(OUT / "appointments_clean.csv", index=False)
     print(f"raw patient rows: {len(tables['patients'])}  -> unique patients: {len(out_p)}")
     print(f"appointments kept: {len(appts)}  (dropped unlinkable/ambiguous: {dropped})")
     print(f"wrote {OUT/'patients_clean.csv'} and {OUT/'appointments_clean.csv'}")
+
+
+def write_quality_report(tables, test_rows, p, out_p, appts, dropped):
+    """Aggregate-only data-quality summary (safe to publish; no row-level values)."""
+    import json
+    raw = tables["patients"]
+    blank = lambda s: s.fillna("").astype(str).str.strip() == ""  # noqa: E731
+    named = p[p["_name"] != ""]
+    reused = int((named.groupby("Ptno")["_name"].nunique() > 1).sum())
+    shared_file = int((raw[raw.FileNo > 0].groupby("FileNo").size() > 1).sum())
+    q = {
+        "tables": {k: list(v.shape) for k, v in tables.items()},
+        "empty_tables": ["account", "extrasummary", "units"],
+        "patients_raw_rows": len(raw),
+        "test_records_removed": int(test_rows.sum()),
+        "unique_patients_after_merge": len(out_p),
+        "rows_merged_or_dropped_as_duplicates": int(len(raw) - test_rows.sum() - len(out_p)),
+        "booking_numbers_reused_for_different_people": reused,
+        "hospital_file_numbers_shared_by_rows": shared_file,
+        "age_is_zero_share": round(float((raw.age == 0).mean()), 3),
+        "rows_with_blank_diagnosis": int(blank(raw.Diagnosis).sum()),
+        "rows_with_blank_summary": int(blank(raw.summary).sum()),
+        "rows_with_blank_residence": int(blank(raw.Residence).sum()),
+        "ses_value_counts": raw.ses.fillna("").replace("", "(blank)").value_counts().to_dict(),
+        "has_sex_column": False,
+        "has_stage_column": False,
+        "users_table_has_password_hash": "users" in tables,
+        "appointments_raw": len(tables["appointments"]),
+        "appointments_kept": len(appts),
+        "appointments_dropped_unlinkable": int(dropped),
+        "region_counts": out_p.region.value_counts().to_dict(),
+    }
+    path = ROOT / "reports" / "data_quality.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(q, indent=2, ensure_ascii=False))
 
 
 def audit(df: pd.DataFrame):

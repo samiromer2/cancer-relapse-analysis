@@ -37,6 +37,22 @@ bookingtreat.sql  ──►  clean_anonymize.py  ──►  extract_features.py 
                                                           └──►  synthesize.py  ──►  data/synthetic/
 ```
 
+## Walk through it: 8 notebooks, one per stage
+
+| Stage | Notebook | Question it answers |
+|---|---|---|
+| 1 · Access & Filter | [01_access_filter](notebooks/01_access_filter.ipynb) | Which patients and columns can answer "will it come back?" |
+| 2 · Wrangling | [02_wrangling](notebooks/02_wrangling.ipynb) | What data-quality issues could make the answer wrong? Is the public file anonymous? |
+| 3 · EDA | [03_eda](notebooks/03_eda.ipynb) | How often does it come back? KPIs, and which factors differ |
+| 4 · Visualization | [04_visualization](notebooks/04_visualization.ipynb) | Which chart for which question (bar, histogram, box, Kaplan–Meier, scatter) |
+| 5 · Feature engineering | [05_feature_engineering](notebooks/05_feature_engineering.ipynb) | Notes → features, a fair target definition, the leakage check |
+| 6 · Modeling | [06_modeling](notebooks/06_modeling.ipynb) | Logistic, random forest, Cox; repeated cross-validation |
+| 7 · Evaluation | [07_evaluation](notebooks/07_evaluation.ipynb) | Accuracy vs precision/recall, confusion matrix, operating points, C-index |
+| 8 · Recommendation | [08_recommendation](notebooks/08_recommendation.ipynb) | Correlation or causation? Verdict, actions, limitations |
+
+The notebooks read **only public files** (k-anonymous features, synthetic data, aggregate reports), so anyone
+can re-run them: `.venv/bin/python scripts/build_notebooks.py` rebuilds and executes all eight.
+
 Run everything: `./run_all.sh` (needs `python -m venv .venv && .venv/bin/pip install -r requirements.txt`).
 
 > **Data in this repository.** The raw database and the per-patient clinical notes are **not** published.
@@ -248,6 +264,8 @@ src/model.py              relapse prediction: Cox (C-index), logistic / random f
 src/synthesize.py         Gaussian-copula + outcome-model synthetic generator, with validation
 src/export_public.py      k-anonymous public release of the feature table
 scripts/privacy_check.py  pre-commit guard against leaking private data
+scripts/build_notebooks.py builds + executes the 8 stage notebooks (public data only)
+notebooks/                01_access_filter … 08_recommendation
 data/processed/           PRIVATE (not in repo): clean notes, appointments, full features
 data/public/              patients_features_public.csv (k ≥ 3)
 data/synthetic/           synthetic_patients.csv

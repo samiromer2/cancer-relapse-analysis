@@ -1,0 +1,62 @@
+{
+  "tables": {
+    "appointments": [
+      1270,
+      5
+    ],
+    "patients": [
+      352,
+      12
+    ],
+    "timeslots": [
+      42,
+      3
+    ],
+    "unitdrs": [
+      6,
+      8
+    ],
+    "users": [
+      1,
+      2
+    ]
+  },
+  "empty_tables": [
+    "account",
+    "extrasummary",
+    "units"
+  ],
+  "patients_raw_rows": 352,
+  "test_records_removed": 1,
+  "unique_patients_after_merge": 335,
+  "rows_merged_or_dropped_as_duplicates": 16,
+  "booking_numbers_reused_for_different_people": 1,
+  "hospital_file_numbers_shared_by_rows": 6,
+  "age_is_zero_share": 0.997,
+  "rows_with_blank_diagnosis": 9,
+  "rows_with_blank_summary": 17,
+  "rows_with_blank_residence": 6,
+  "ses_value_counts": {
+    "II": 162,
+    "IV": 145,
+    "V": 29,
+    "(blank)": 11,
+    "I": 5
+  },
+  "has_sex_column": false,
+  "has_stage_column": false,
+  "users_table_has_password_hash": true,
+  "appointments_raw": 1270,
+  "appointments_kept": 1250,
+  "appointments_dropped_unlinkable": 20,
+  "region_counts": {
+    "Khartoum": 85,
+    "Central (Gezira / Sennar / White & Blue Nile)": 70,
+    "Darfur": 59,
+    "Kordofan": 55,
+    "Northern / River Nile": 37,
+    "Eastern": 19,
+    "South Sudan / abroad": 8,
+    "Unknown": 2
+  }
+}

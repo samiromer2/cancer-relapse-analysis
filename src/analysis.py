@@ -227,7 +227,7 @@ def e_value(hr, lo, hi):
         return r + np.sqrt(r * (r - 1))
     point = ev(rr(hr))
     bound = 1.0 if lo <= 1 <= hi else ev(rr(lo if hr > 1 else hi))
-    return round(point, 2), round(bound, 2)
+    return round(float(point), 2), round(float(bound), 2)
 
 
 def verdict(kind, crude_sig, adj_sig, crude_hr, adj_hr, n_adj):

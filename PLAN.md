@@ -33,14 +33,14 @@ cancer type is the only clear link. HT and RT point the way trials do but are no
 
 | Stage | Status | Where |
 |---|---|---|
-| 1. Access & Filter | ✅ done (needs a teaching notebook) | `src/parse_sql.py` |
+| 1. Access & Filter | ✅ done | `src/parse_sql.py`, `notebooks/01_access_filter.ipynb` |
 | 2. Wrangling | ✅ done — dedupe, de-identification, audit | `src/clean_anonymize.py` |
 | 3. EDA | ✅ done | `src/analysis.py` |
 | 4. Visualization | ✅ 10 charts | `reports/figures/` |
 | 5. Feature Engineering | ✅ 60 features from notes | `src/extract_features.py` |
 | 6. Modeling | ✅ logistic + random forest, repeated CV | `src/model.py` |
 | 7. Evaluation | ✅ accuracy/precision/recall/F1/AUC, confusion matrix, operating points | `reports/` |
-| 8. Recommendation | ⚠️ draft in README §8 | — |
+| 8. Recommendation | ✅ README §9 + `notebooks/08_recommendation.ipynb` | — |
 
 ## Phases
 
@@ -52,7 +52,7 @@ cancer type is the only clear link. HT and RT point the way trials do but are no
 - Create the repo **private first**; make public only after a final privacy review.
 - Add `LICENSE`, `DATA_STATEMENT.md` (source, consent/ethics note, what was removed).
 
-### Phase 1 — Notebooks following the 8 stages (1–2 days)
+### Phase 1 — Notebooks following the 8 stages ✅ done (`notebooks/`, built by `scripts/build_notebooks.py`)
 One notebook per stage in `notebooks/`, each answering the PDF's questions *for this data*,
 importing logic from `src/` (no copy-pasted code):
 `01_access_filter` · `02_wrangling` · `03_eda` · `04_visualization` · `05_features` ·
